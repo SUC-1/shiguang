@@ -1,9 +1,9 @@
 // @ts-ignore;
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 // @ts-ignore;
 import { useToast, Button } from '@/components/ui';
 // @ts-ignore;
-import { QrCode, Upload, Download, Store, X, Check } from 'lucide-react';
+import { QrCode, Upload, Download, Store, X, Check, Loader2 } from 'lucide-react';
 
 import TabBar from '@/components/TabBar';
 export default function DiningQrCode(props) {
@@ -11,11 +11,67 @@ export default function DiningQrCode(props) {
     toast
   } = useToast();
   const {
+    navigateTo,
     navigateBack
   } = props.$w.utils;
-  const [qrCode, setQrCode] = useState('https://via.placeholder.com/300x300/FF8B4E/FFFFFF?text=QR+CODE');
+  const [qrCode, setQrCode] = useState('');
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [uploadUrl, setUploadUrl] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [activeRecordId, setActiveRecordId] = useState(null);
+  const [description, setDescription] = useState('');
+
+  // 从 payment_qrcodes 数据模型获取当前激活的收款码
+  const fetchQrCode = async () => {
+    setLoading(true);
+    try {
+      const result = await props.$w.cloud.callDataSource({
+        dataSourceName: 'payment_qrcodes',
+        methodName: 'wedaGetRecordsV2',
+        params: {
+          filter: {
+            where: {
+              $and: [{
+                isActive: {
+                  $eq: true
+                }
+              }]
+            }
+          },
+          orderBy: [{
+            createdAt: 'desc'
+          }],
+          select: {
+            $master: true
+          },
+          getCount: true,
+          pageSize: 1,
+          pageNumber: 1
+        }
+      });
+      if (result.records && result.records.length > 0) {
+        const record = result.records[0];
+        setQrCode(record.qrCode || '');
+        setActiveRecordId(record._id);
+        setDescription(record.description || '');
+      } else {
+        setQrCode('');
+        setActiveRecordId(null);
+        setDescription('');
+      }
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: '加载失败',
+        description: error.message || '无法获取收款码信息'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    fetchQrCode();
+  }, []);
   const handleUpload = async e => {
     e.preventDefault();
     try {
@@ -23,9 +79,43 @@ export default function DiningQrCode(props) {
         toast({
           variant: 'destructive',
           title: '上传失败',
-          description: '请先选择图片'
+          description: '请先输入收款码图片链接'
         });
         return;
+      }
+      if (activeRecordId) {
+        // 更新已有记录的收款码图片
+        await props.$w.cloud.callDataSource({
+          dataSourceName: 'payment_qrcodes',
+          methodName: 'wedaUpdateV2',
+          params: {
+            filter: {
+              where: {
+                $and: [{
+                  _id: {
+                    $eq: activeRecordId
+                  }
+                }]
+              }
+            },
+            data: {
+              qrCode: uploadUrl
+            }
+          }
+        });
+      } else {
+        // 创建新的激活记录
+        const result = await props.$w.cloud.callDataSource({
+          dataSourceName: 'payment_qrcodes',
+          methodName: 'wedaCreateV2',
+          params: {
+            data: {
+              qrCode: uploadUrl,
+              isActive: true
+            }
+          }
+        });
+        setActiveRecordId(result.id);
       }
       setQrCode(uploadUrl);
       setShowUploadModal(false);
@@ -45,6 +135,14 @@ export default function DiningQrCode(props) {
   };
   const handleDownload = async () => {
     try {
+      if (!qrCode) {
+        toast({
+          variant: 'destructive',
+          title: '下载失败',
+          description: '暂无收款码可下载'
+        });
+        return;
+      }
       const link = document.createElement('a');
       link.href = qrCode;
       link.download = '收款码.png';
@@ -63,28 +161,58 @@ export default function DiningQrCode(props) {
     }
   };
   const handleGenerateNew = async () => {
+    setLoading(true);
     try {
+      // 将当前激活的记录设为非激活
+      if (activeRecordId) {
+        await props.$w.cloud.callDataSource({
+          dataSourceName: 'payment_qrcodes',
+          methodName: 'wedaUpdateV2',
+          params: {
+            filter: {
+              where: {
+                $and: [{
+                  _id: {
+                    $eq: activeRecordId
+                  }
+                }]
+              }
+            },
+            data: {
+              isActive: false
+            }
+          }
+        });
+      }
+
+      // 创建新的激活收款码记录
+      const result = await props.$w.cloud.callDataSource({
+        dataSourceName: 'payment_qrcodes',
+        methodName: 'wedaCreateV2',
+        params: {
+          data: {
+            qrCode: '',
+            isActive: true,
+            description: '新生成的收款码，请上传收款码图片'
+          }
+        }
+      });
+      setQrCode('');
+      setActiveRecordId(result.id);
+      setDescription('新生成的收款码，请上传收款码图片');
       toast({
         variant: 'default',
-        title: '生成中',
-        description: '正在生成新的收款码...'
+        title: '生成成功',
+        description: '新收款码已生成，请上传收款码图片'
       });
-      // 这里可以调用实际的生成API
-      setTimeout(() => {
-        const newQrCode = `https://via.placeholder.com/300x300/FF6B35/FFFFFF?text=QR+CODE+${Date.now()}`;
-        setQrCode(newQrCode);
-        toast({
-          variant: 'default',
-          title: '生成成功',
-          description: '新收款码已生成'
-        });
-      }, 1500);
     } catch (error) {
       toast({
         variant: 'destructive',
         title: '生成失败',
         description: error.message || '请重试'
       });
+    } finally {
+      setLoading(false);
     }
   };
   return <div className="min-h-screen bg-gradient-to-br from-[#FCEEB8] via-[#FF8B4E] to-[#FF6B35]">
@@ -112,7 +240,13 @@ export default function DiningQrCode(props) {
             <div className="flex-1">
               <div className="bg-gradient-to-br from-[#FCEEB8] to-[#FF8B4E] rounded-3xl p-8 shadow-xl">
                 <div className="bg-white rounded-2xl p-6 shadow-lg">
-                  <img src={qrCode} alt="收款码" className="w-full h-auto max-w-xs mx-auto" />
+                  {loading ? <div className="w-full h-48 flex items-center justify-center">
+                      <Loader2 className="h-12 w-12 text-[#FF8B4E] animate-spin" />
+                    </div> : qrCode ? <img src={qrCode} alt="收款码" className="w-full h-auto max-w-xs mx-auto" /> : <div className="w-full h-48 flex items-center justify-center text-[#8B7355]" style={{
+                  fontFamily: 'Nunito'
+                }}>
+                      暂无收款码
+                    </div>}
                 </div>
                 <p className="text-center mt-4 text-white font-semibold" style={{
                 fontFamily: 'Quicksand'
@@ -130,6 +264,9 @@ export default function DiningQrCode(props) {
               }}>
                   收款码说明
                 </h2>
+                {description && <p className="text-sm text-[#8B7355] mb-3" style={{
+                fontFamily: 'Nunito'
+              }}>{description}</p>}
                 <ul className="space-y-2 text-sm text-[#8B7355]" style={{
                 fontFamily: 'Nunito'
               }}>
@@ -167,10 +304,10 @@ export default function DiningQrCode(props) {
                 </Button>
               </div>
 
-              <Button onClick={handleGenerateNew} className="w-full bg-gradient-to-r from-[#FF8B4E] to-[#FF6B35] text-white h-12 font-bold rounded-xl shadow-lg hover:shadow-xl" style={{
+              <Button onClick={handleGenerateNew} disabled={loading} className="w-full bg-gradient-to-r from-[#FF8B4E] to-[#FF6B35] text-white h-12 font-bold rounded-xl shadow-lg hover:shadow-xl" style={{
               fontFamily: 'Quicksand'
             }}>
-                <Store className="h-5 w-5 mr-2" />
+                {loading ? <Loader2 className="h-5 w-5 mr-2 animate-spin" /> : <Store className="h-5 w-5 mr-2" />}
                 生成新收款码
               </Button>
             </div>
@@ -247,19 +384,17 @@ export default function DiningQrCode(props) {
 
             <form onSubmit={handleUpload} className="space-y-4">
               <div>
-                <div className="border-2 border-dashed border-[#FF8B4E] rounded-xl p-8 text-center cursor-pointer hover:border-[#FF6B35] transition-colors">
-                  <Upload className="h-12 w-12 mx-auto mb-2 text-[#FF8B4E]" />
-                  <p className="text-sm text-[#8B7355] mb-2" style={{
-                fontFamily: 'Nunito'
-              }}>
-                    点击选择图片或拖拽至此
-                  </p>
-                  <p className="text-xs text-[#8B7355]" style={{
-                fontFamily: 'Nunito'
-              }}>
-                    支持 JPG、PNG 格式，大小不超过 5MB
-                  </p>
-                </div>
+                <label className="block text-sm font-medium text-[#8B7355] mb-2" style={{
+              fontFamily: 'Nunito'
+            }}>收款码图片链接</label>
+                <input type="url" value={uploadUrl} onChange={e => setUploadUrl(e.target.value)} placeholder="请输入收款码图片链接" className="w-full border-2 border-dashed border-[#FF8B4E] rounded-xl p-4 text-sm text-[#8B7355] focus:outline-none focus:border-[#FF6B35] transition-colors" style={{
+              fontFamily: 'Nunito'
+            }} />
+                <p className="text-xs text-[#8B7355] mt-2" style={{
+              fontFamily: 'Nunito'
+            }}>
+                  支持 JPG、PNG 格式图片链接
+                </p>
               </div>
 
               <div className="flex gap-3">

@@ -1,9 +1,9 @@
 // @ts-ignore;
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 // @ts-ignore;
 import { useToast, Button } from '@/components/ui';
 // @ts-ignore;
-import { Store, Plus, Edit2, Trash2, Book, Search, Check, Upload, X, Sparkles } from 'lucide-react';
+import { Store, Plus, Edit2, Trash2, Book, Search, Check, Upload, X, Sparkles, Loader2 } from 'lucide-react';
 
 import TabBar from '@/components/TabBar';
 export default function DiningMenu(props) {
@@ -11,38 +11,12 @@ export default function DiningMenu(props) {
     toast
   } = useToast();
   const {
-    navigateBack
+    navigateBack,
+    navigateTo
   } = props.$w.utils;
   const [activeTab, setActiveTab] = useState('custom');
-  const [menuItems, setMenuItems] = useState([{
-    id: 1,
-    name: '宫保鸡丁',
-    cuisine: '四川菜系',
-    price: 38,
-    image: 'https://images.unsplash.com/photo-1566757033849-0d6560c6318a?w=500',
-    isCustom: false
-  }, {
-    id: 2,
-    name: '麻婆豆腐',
-    cuisine: '四川菜系',
-    price: 28,
-    image: 'https://images.unsplash.com/photo-1552364088-0568b0c08e7c?w=500',
-    isCustom: false
-  }, {
-    id: 3,
-    name: '红烧狮子头',
-    cuisine: '江苏菜系',
-    price: 48,
-    image: 'https://images.unsplash.com/photo-1551888847-bd7d405c0b6e?w=500',
-    isCustom: false
-  }, {
-    id: 4,
-    name: '特色红烧肉',
-    cuisine: '自定义',
-    price: 58,
-    image: 'https://images.unsplash.com/photo-1585393187890-8103d9315a2a?w=500',
-    isCustom: true
-  }]);
+  const [menuItems, setMenuItems] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
@@ -72,8 +46,77 @@ export default function DiningMenu(props) {
     items: ['麻婆豆腐', '家常豆腐', '清炒时蔬', '素炒面'],
     image: 'https://images.unsplash.com/photo-1552364088-0568b0c08e7c?w=500'
   }]);
+
+  // 从 dishes 数据模型加载菜品数据
+  const fetchDishes = async () => {
+    setLoading(true);
+    try {
+      const result = await props.$w.cloud.callDataSource({
+        dataSourceName: 'dishes',
+        methodName: 'wedaGetRecordsV2',
+        params: {
+          filter: {
+            where: {
+              $and: [{
+                businessType: {
+                  $eq: 'dining'
+                }
+              }]
+            }
+          },
+          orderBy: [{
+            createdAt: 'desc'
+          }],
+          select: {
+            name: true,
+            image: true,
+            cuisine: true,
+            price: true,
+            isCustom: true
+          },
+          getCount: true,
+          pageSize: 200,
+          pageNumber: 1
+        }
+      });
+      setMenuItems((result.records || []).map(record => ({
+        id: record._id,
+        name: record.name || '',
+        cuisine: record.cuisine || '',
+        price: record.price || 0,
+        image: record.image || '',
+        isCustom: record.isCustom || false
+      })));
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: '加载失败',
+        description: error.message || '无法加载菜品数据，请重试'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    fetchDishes();
+  }, []);
   const handleDelete = async itemId => {
     try {
+      await props.$w.cloud.callDataSource({
+        dataSourceName: 'dishes',
+        methodName: 'wedaDeleteV2',
+        params: {
+          filter: {
+            where: {
+              $and: [{
+                _id: {
+                  $eq: itemId
+                }
+              }]
+            }
+          }
+        }
+      });
       setMenuItems(menuItems.filter(item => item.id !== itemId));
       toast({
         variant: 'default',
@@ -93,7 +136,7 @@ export default function DiningMenu(props) {
     setFormData({
       name: item.name,
       cuisine: item.cuisine,
-      price: item.price,
+      price: String(item.price),
       image: item.image
     });
     setShowAddModal(true);
@@ -102,6 +145,28 @@ export default function DiningMenu(props) {
     e.preventDefault();
     try {
       if (editingItem) {
+        // 更新已有菜品
+        await props.$w.cloud.callDataSource({
+          dataSourceName: 'dishes',
+          methodName: 'wedaUpdateV2',
+          params: {
+            filter: {
+              where: {
+                $and: [{
+                  _id: {
+                    $eq: editingItem.id
+                  }
+                }]
+              }
+            },
+            data: {
+              name: formData.name,
+              cuisine: formData.cuisine,
+              price: parseFloat(formData.price),
+              image: formData.image
+            }
+          }
+        });
         setMenuItems(menuItems.map(item => item.id === editingItem.id ? {
           ...item,
           ...formData,
@@ -113,11 +178,26 @@ export default function DiningMenu(props) {
           description: '菜品信息已更新'
         });
       } else {
+        // 新增菜品
+        const newItemData = {
+          name: formData.name,
+          cuisine: formData.cuisine,
+          price: parseFloat(formData.price),
+          image: formData.image,
+          isCustom: true,
+          businessType: 'dining'
+        };
+        await props.$w.cloud.callDataSource({
+          dataSourceName: 'dishes',
+          methodName: 'wedaCreateV2',
+          params: {
+            data: newItemData
+          }
+        });
         const newItem = {
           id: Date.now(),
-          ...formData,
-          price: parseFloat(formData.price),
-          isCustom: true
+          ...newItemData,
+          price: parseFloat(formData.price)
         };
         setMenuItems([...menuItems, newItem]);
         toast({
@@ -134,6 +214,7 @@ export default function DiningMenu(props) {
         price: '',
         image: ''
       });
+      fetchDishes();
     } catch (error) {
       toast({
         variant: 'destructive',
@@ -226,8 +307,26 @@ export default function DiningMenu(props) {
           </div>
         </div>
 
+        {/* 加载状态 */}
+        {loading && <div className="flex items-center justify-center py-16">
+            <Loader2 className="h-8 w-8 text-[#FF8B4E] animate-spin" />
+            <span className="ml-3 text-[#8B7355] font-semibold" style={{
+          fontFamily: 'Nunito'
+        }}>
+              加载菜品数据中...
+            </span>
+          </div>}
+
         {/* 自定义菜单内容 */}
-        {activeTab === 'custom' && <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {!loading && activeTab === 'custom' && <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredItems.length === 0 && <div className="col-span-full text-center py-16">
+                <Store className="h-16 w-16 mx-auto mb-4 text-[#FCEEB8]" />
+                <p className="text-[#8B7355] font-semibold" style={{
+            fontFamily: 'Nunito'
+          }}>
+                  暂无菜品数据
+                </p>
+              </div>}
             {filteredItems.map(item => <div key={item.id} className="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-shadow">
                 <div className="h-40 relative">
                   <img src={item.image} alt={item.name} className="w-full h-full object-cover" />

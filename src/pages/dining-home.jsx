@@ -1,9 +1,9 @@
 // @ts-ignore;
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 // @ts-ignore;
 import { useToast, Button } from '@/components/ui';
 // @ts-ignore;
-import { Store, ShoppingCart, Utensils, QrCode, TrendingUp, Users, Clock, CheckCircle, Sparkles } from 'lucide-react';
+import { Store, ShoppingCart, Utensils, QrCode, TrendingUp, Users, Clock, CheckCircle, Sparkles, Loader2 } from 'lucide-react';
 
 import TabBar from '@/components/TabBar';
 export default function DiningHome(props) {
@@ -15,50 +15,15 @@ export default function DiningHome(props) {
   } = props.$w.utils;
   const currentUser = props.$w.auth.currentUser || {};
   const [stats, setStats] = useState({
-    totalOrders: 128,
-    todayOrders: 15,
-    completedOrders: 120,
-    pendingOrders: 8,
-    totalRevenue: 15800,
-    todayRevenue: 1800
+    totalOrders: 0,
+    todayOrders: 0,
+    completedOrders: 0,
+    pendingOrders: 0,
+    totalRevenue: 0,
+    todayRevenue: 0
   });
-  const [recentOrders, setRecentOrders] = useState([{
-    id: 1,
-    customerName: '张三',
-    dishes: [{
-      name: '宫保鸡丁',
-      quantity: 2
-    }, {
-      name: '麻婆豆腐',
-      quantity: 1
-    }],
-    total: 88,
-    status: 'pending',
-    timestamp: new Date(Date.now() - 120000)
-  }, {
-    id: 2,
-    customerName: '李四',
-    dishes: [{
-      name: '水煮牛肉',
-      quantity: 1
-    }, {
-      name: '糖醋排骨',
-      quantity: 2
-    }],
-    total: 158,
-    status: 'cooking',
-    timestamp: new Date(Date.now() - 300000)
-  }, {
-    id: 3,
-    customerName: '王五',
-    dishes: [{
-      name: '清蒸鲈鱼',
-      quantity: 1
-    }],
-    total: 98,
-    status: 'completed',
-    timestamp: new Date(Date.now() - 600000)
-  }]);
+  const [recentOrders, setRecentOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
   const formatTime = date => {
     const now = new Date();
     const diff = Math.floor((now - date) / 1000);
@@ -90,6 +55,175 @@ export default function DiningHome(props) {
         return '未知';
     }
   };
+
+  // 获取统计数据
+  const fetchStats = async () => {
+    try {
+      // 获取餐饮端所有订单
+      const allOrdersResult = await props.$w.cloud.callDataSource({
+        dataSourceName: 'orders',
+        methodName: 'wedaGetRecordsV2',
+        params: {
+          filter: {
+            where: {
+              $and: [{
+                businessType: {
+                  $eq: 'dining'
+                }
+              }]
+            }
+          },
+          select: {
+            $master: true
+          },
+          getCount: true,
+          pageSize: 200,
+          pageNumber: 1
+        }
+      });
+
+      // 获取今日订单（今日0点之后创建的）
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      const todayOrdersResult = await props.$w.cloud.callDataSource({
+        dataSourceName: 'orders',
+        methodName: 'wedaGetRecordsV2',
+        params: {
+          filter: {
+            where: {
+              $and: [{
+                businessType: {
+                  $eq: 'dining'
+                }
+              }, {
+                createdAt: {
+                  $gte: todayStart.getTime()
+                }
+              }]
+            }
+          },
+          select: {
+            $master: true
+          },
+          getCount: true,
+          pageSize: 1,
+          pageNumber: 1
+        }
+      });
+      const allOrders = allOrdersResult.records || [];
+      const todayCount = todayOrdersResult.total || 0;
+      const completedOrders = allOrders.filter(o => o.status === 'completed').length;
+      const pendingOrders = allOrders.filter(o => o.status === 'pending').length;
+      const totalRevenue = allOrders.filter(o => o.status === 'completed').reduce((sum, o) => sum + (o.total || 0), 0);
+      const todayOrders = allOrders.filter(o => {
+        const created = new Date(o.createdAt);
+        return created >= todayStart;
+      });
+      const todayRevenue = todayOrders.filter(o => o.status === 'completed').reduce((sum, o) => sum + (o.total || 0), 0);
+      setStats({
+        totalOrders: allOrdersResult.total || allOrders.length,
+        todayOrders: todayCount,
+        completedOrders: completedOrders,
+        pendingOrders: pendingOrders,
+        totalRevenue: totalRevenue,
+        todayRevenue: todayRevenue
+      });
+    } catch (e) {
+      toast({
+        title: '获取统计数据失败',
+        description: e.message || '请稍后重试',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  // 获取最新订单
+  const fetchRecentOrders = async () => {
+    try {
+      const result = await props.$w.cloud.callDataSource({
+        dataSourceName: 'orders',
+        methodName: 'wedaGetRecordsV2',
+        params: {
+          filter: {
+            where: {
+              $and: [{
+                businessType: {
+                  $eq: 'dining'
+                }
+              }]
+            }
+          },
+          select: {
+            $master: true
+          },
+          orderBy: [{
+            createdAt: 'desc'
+          }],
+          pageSize: 5,
+          pageNumber: 1
+        }
+      });
+      const orders = (result.records || []).map(record => ({
+        id: record._id,
+        customerName: record.userName,
+        dishes: Array.isArray(record.dishes) ? record.dishes : [],
+        total: record.total || 0,
+        status: record.status || 'pending',
+        timestamp: new Date(record.createdAt)
+      }));
+      setRecentOrders(orders);
+    } catch (e) {
+      toast({
+        title: '获取订单列表失败',
+        description: e.message || '请稍后重试',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  // 更新订单状态
+  const handleUpdateOrderStatus = async (orderId, newStatus) => {
+    try {
+      const result = await props.$w.cloud.callFunction({
+        name: 'manageOrders',
+        data: {
+          action: 'updateStatus',
+          orderId: orderId,
+          status: newStatus
+        }
+      });
+      if (result.result && result.result.success) {
+        toast({
+          title: '订单状态已更新',
+          description: `订单已更新为${getStatusText(newStatus)}`
+        });
+        fetchRecentOrders();
+        fetchStats();
+      } else {
+        toast({
+          title: '更新失败',
+          description: result.result && result.result.message || '请稍后重试',
+          variant: 'destructive'
+        });
+      }
+    } catch (e) {
+      toast({
+        title: '更新失败',
+        description: e.message || '请稍后重试',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  // 初始加载
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      await Promise.all([fetchStats(), fetchRecentOrders()]);
+      setLoading(false);
+    };
+    loadData();
+  }, []);
   return <div className="min-h-screen bg-gradient-to-br from-[#FCEEB8] via-[#FF8B4E] to-[#FF6B35]">
       <div className="max-w-6xl mx-auto p-6 pb-24">
         {/* 头部欢迎区域 */}
@@ -121,7 +255,7 @@ export default function DiningHome(props) {
               </div>
               <p className="text-3xl font-bold" style={{
               fontFamily: 'Quicksand'
-            }}>{stats.totalOrders}</p>
+            }}>{loading ? <Loader2 className="h-6 w-6 animate-spin mx-auto" /> : stats.totalOrders}</p>
             </div>
             <div className="bg-gradient-to-br from-[#9CCF4E] to-[#7AB84E] rounded-2xl p-4 text-white">
               <div className="flex items-center gap-2 mb-2">
@@ -132,7 +266,7 @@ export default function DiningHome(props) {
               </div>
               <p className="text-3xl font-bold" style={{
               fontFamily: 'Quicksand'
-            }}>{stats.todayOrders}</p>
+            }}>{loading ? <Loader2 className="h-6 w-6 animate-spin mx-auto" /> : stats.todayOrders}</p>
             </div>
             <div className="bg-gradient-to-br from-[#FF6B35] to-[#E85A42] rounded-2xl p-4 text-white">
               <div className="flex items-center gap-2 mb-2">
@@ -143,7 +277,7 @@ export default function DiningHome(props) {
               </div>
               <p className="text-3xl font-bold" style={{
               fontFamily: 'Quicksand'
-            }}>{stats.completedOrders}</p>
+            }}>{loading ? <Loader2 className="h-6 w-6 animate-spin mx-auto" /> : stats.completedOrders}</p>
             </div>
             <div className="bg-gradient-to-br from-[#FCEEB8] to-[#FFB34E] rounded-2xl p-4 text-[#FF6B35]">
               <div className="flex items-center gap-2 mb-2">
@@ -154,7 +288,33 @@ export default function DiningHome(props) {
               </div>
               <p className="text-3xl font-bold" style={{
               fontFamily: 'Quicksand'
-            }}>{stats.pendingOrders}</p>
+            }}>{loading ? <Loader2 className="h-6 w-6 animate-spin mx-auto" /> : stats.pendingOrders}</p>
+            </div>
+          </div>
+
+          {/* 营收信息 */}
+          <div className="grid grid-cols-2 gap-4 mt-4">
+            <div className="bg-gradient-to-br from-[#8B7355] to-[#6B5345] rounded-2xl p-4 text-white">
+              <div className="flex items-center gap-2 mb-2">
+                <TrendingUp className="h-5 w-5" />
+                <span className="text-sm font-medium" style={{
+                fontFamily: 'Nunito'
+              }}>总营收</span>
+              </div>
+              <p className="text-2xl font-bold" style={{
+              fontFamily: 'Quicksand'
+            }}>¥{loading ? 0 : stats.totalRevenue}</p>
+            </div>
+            <div className="bg-gradient-to-br from-[#E85A42] to-[#C94A32] rounded-2xl p-4 text-white">
+              <div className="flex items-center gap-2 mb-2">
+                <Sparkles className="h-5 w-5" />
+                <span className="text-sm font-medium" style={{
+                fontFamily: 'Nunito'
+              }}>今日营收</span>
+              </div>
+              <p className="text-2xl font-bold" style={{
+              fontFamily: 'Quicksand'
+            }}>¥{loading ? 0 : stats.todayRevenue}</p>
             </div>
           </div>
         </div>
@@ -222,7 +382,13 @@ export default function DiningHome(props) {
             </Button>
           </div>
 
-          <div className="space-y-4">
+          {loading ? <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 text-[#FF6B35] animate-spin" />
+            </div> : recentOrders.length === 0 ? <div className="text-center py-12 text-[#8B7355]" style={{
+          fontFamily: 'Nunito'
+        }}>
+              暂无订单数据
+            </div> : <div className="space-y-4">
             {recentOrders.map(order => <div key={order.id} className="bg-[#FCEEB8] rounded-2xl p-4 hover:shadow-lg transition-shadow">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-3">
@@ -241,11 +407,21 @@ export default function DiningHome(props) {
                       </div>
                     </div>
                   </div>
-                  <div className="px-3 py-1 rounded-full text-sm font-semibold text-white" style={{
-                fontFamily: 'Nunito',
-                backgroundColor: getStatusColor(order.status)
-              }}>
-                    {getStatusText(order.status)}
+                  <div className="flex items-center gap-2">
+                    <div className="px-3 py-1 rounded-full text-sm font-semibold text-white" style={{
+                  fontFamily: 'Nunito',
+                  backgroundColor: getStatusColor(order.status)
+                }}>
+                      {getStatusText(order.status)}
+                    </div>
+                    {(order.status === 'pending' || order.status === 'cooking') && <Button onClick={() => {
+                  const newStatus = order.status === 'pending' ? 'cooking' : 'completed';
+                  handleUpdateOrderStatus(order.id, newStatus);
+                }} className="h-8 px-3 text-sm font-bold rounded-xl bg-[#FF6B35] text-white hover:bg-[#E85A42]" style={{
+                  fontFamily: 'Quicksand'
+                }}>
+                        {order.status === 'pending' ? '开始烹饪' : '完成订单'}
+                      </Button>}
                   </div>
                 </div>
 
@@ -271,7 +447,7 @@ export default function DiningHome(props) {
                   </span>
                 </div>
               </div>)}
-          </div>
+          </div>}
         </div>
       </div>
 
