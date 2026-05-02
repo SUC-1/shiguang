@@ -1,9 +1,9 @@
 // @ts-ignore;
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 // @ts-ignore;
 import { useToast, Button } from '@/components/ui';
 // @ts-ignore;
-import { ChefHat, ShoppingCart, BookOpen, Play, Clock, Users, CheckCircle, ListChecks, Video, Image as ImageIcon, Info } from 'lucide-react';
+import { ChefHat, ShoppingCart, BookOpen, Play, Clock, Users, CheckCircle, ListChecks, Video, Image as ImageIcon, Info, Loader2 } from 'lucide-react';
 
 // @ts-ignore;
 import TabBar from '@/components/TabBar';
@@ -17,79 +17,145 @@ export default function FamilyChef(props) {
   } = props.$w.utils;
   const currentUser = props.$w.auth.currentUser || {};
   const [orders, setOrders] = useState([]);
+  const [dishesData, setDishesData] = useState([]);
   const [activeTab, setActiveTab] = useState('orders');
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [activeCooking, setActiveCooking] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // 模拟订单数据
-  const mockOrders = [{
-    id: 1,
-    userName: '小明',
-    dishes: [{
-      name: '红烧狮子头',
-      quantity: 2,
-      ingredients: ['猪肉500g', '鸡蛋2个', '淀粉50g', '葱姜适量']
-    }, {
-      name: '宫保鸡丁',
-      quantity: 1,
-      ingredients: ['鸡胸肉300g', '花生米100g', '干辣椒10个', '花椒适量']
-    }, {
-      name: '清蒸鲈鱼',
-      quantity: 1,
-      ingredients: ['鲈鱼1条', '葱姜丝适量', '蒸鱼豉油2勺']
-    }],
-    message: '今天想吃清淡一点的，鱼要新鲜哦！',
-    status: 'pending',
-    timestamp: new Date(Date.now() - 180000),
-    boardColor: '#FF8B4E'
-  }, {
-    id: 2,
-    userName: '小红',
-    dishes: [{
-      name: '麻婆豆腐',
-      quantity: 1,
-      ingredients: ['豆腐400g', '肉末100g', '豆瓣酱2勺', '花椒粉适量']
-    }, {
-      name: '水煮牛肉',
-      quantity: 2,
-      ingredients: ['牛肉400g', '豆芽200g', '辣椒适量', '蒜苗2根']
-    }],
-    message: '要麻辣味浓郁的！',
-    status: 'cooking',
-    timestamp: new Date(Date.now() - 360000),
-    boardColor: '#9CCF4E'
-  }, {
-    id: 3,
-    userName: '爸爸',
-    dishes: [{
-      name: '糖醋排骨',
-      quantity: 1,
-      ingredients: ['排骨500g', '白糖3勺', '醋2勺', '生抽1勺']
-    }],
-    message: '少放糖',
-    status: 'completed',
-    timestamp: new Date(Date.now() - 720000),
-    boardColor: '#E85A42'
-  }];
+  // 获取家庭端订单列表
+  const fetchOrders = async () => {
+    try {
+      const result = await props.$w.cloud.callDataSource({
+        dataSourceName: 'orders',
+        methodName: 'wedaGetRecordsV2',
+        params: {
+          filter: {
+            where: {
+              $and: [{
+                businessType: {
+                  $eq: 'family'
+                }
+              }]
+            }
+          },
+          orderBy: [{
+            createdAt: 'desc'
+          }],
+          select: {
+            $master: true
+          },
+          getCount: true,
+          pageSize: 50,
+          pageNumber: 1
+        }
+      });
+      const records = result && result.records || [];
+      const mappedOrders = records.map(record => ({
+        id: record._id,
+        userName: record.userName || '',
+        dishes: (record.dishes || []).map(d => ({
+          name: d.name || '',
+          quantity: d.quantity || 1,
+          price: d.price || 0
+        })),
+        message: record.message || '',
+        status: record.status || 'pending',
+        timestamp: new Date(record.createdAt || Date.now()),
+        boardColor: record.boardColor || '#FF8B4E'
+      }));
+      setOrders(mappedOrders);
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: '加载订单失败',
+        description: error.message || '请稍后重试'
+      });
+    }
+  };
+
+  // 获取家庭端菜品数据（用于备菜清单和烹饪指导）
+  const fetchDishes = async () => {
+    try {
+      const result = await props.$w.cloud.callDataSource({
+        dataSourceName: 'dishes',
+        methodName: 'wedaGetRecordsV2',
+        params: {
+          filter: {
+            where: {
+              $and: [{
+                businessType: {
+                  $eq: 'family'
+                }
+              }]
+            }
+          },
+          orderBy: [{
+            createdAt: 'desc'
+          }],
+          select: {
+            $master: true
+          },
+          getCount: true,
+          pageSize: 50,
+          pageNumber: 1
+        }
+      });
+      const records = result && result.records || [];
+      setDishesData(records);
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: '加载菜品失败',
+        description: error.message || '请稍后重试'
+      });
+    }
+  };
+
+  // 页面加载时获取数据
+  useEffect(() => {
+    const initData = async () => {
+      setLoading(true);
+      await Promise.all([fetchOrders(), fetchDishes()]);
+      setLoading(false);
+    };
+    initData();
+  }, []);
   const formatTime = date => {
+    if (!date) return '';
     const now = new Date();
-    const diff = Math.floor((now - date) / 1000);
+    const diff = Math.floor((now - new Date(date)) / 1000);
     if (diff < 60) return `${diff}秒前`;
     if (diff < 3600) return `${Math.floor(diff / 60)}分钟前`;
     return `${Math.floor(diff / 3600)}小时前`;
   };
+
+  // 更新订单状态（通过 manageOrders 云函数）
   const handleStatusChange = async (orderId, newStatus) => {
     try {
-      const updatedOrders = orders.map(order => order.id === orderId ? {
-        ...order,
-        status: newStatus
-      } : order);
-      setOrders(updatedOrders);
-      toast({
-        variant: 'default',
-        title: '状态更新成功',
-        description: newStatus === 'cooking' ? '开始烹饪' : '已完成烹饪'
+      const result = await props.$w.cloud.callFunction({
+        name: 'manageOrders',
+        data: {
+          action: 'updateStatus',
+          orderId: orderId,
+          status: newStatus
+        }
       });
+      if (result && result.success) {
+        // 更新成功后刷新订单列表
+        await fetchOrders();
+        toast({
+          variant: 'default',
+          title: '状态更新成功',
+          description: newStatus === 'cooking' ? '开始烹饪' : '已完成烹饪'
+        });
+      } else {
+        toast({
+          variant: 'destructive',
+          title: '状态更新失败',
+          description: result && result.message || '请重试'
+        });
+      }
     } catch (error) {
       toast({
         variant: 'destructive',
@@ -102,32 +168,45 @@ export default function FamilyChef(props) {
     setActiveCooking(dish);
   };
 
-  // 备菜清单汇总
+  // 备菜清单汇总 — 基于订单中的菜品配料
   const getIngredientSummary = () => {
     const summary = {};
     orders.forEach(order => {
       order.dishes.forEach(dish => {
-        (dish.ingredients || []).forEach(ingredient => {
+        // 从 dishesData 中查找对应菜品的配料
+        const matchedDish = dishesData.find(d => d.name === dish.name);
+        const ingredients = matchedDish ? matchedDish.ingredients || [] : [];
+        ingredients.forEach(ingredient => {
           const match = ingredient.match(/(\d+)(.*)/);
           if (match) {
             const [_, amount, unit] = match;
             const name = ingredient.replace(match[0], '').trim() || ingredient;
-            summary[name] = (summary[name] || 0) + parseInt(amount) + unit;
+            const parsedAmount = parseInt(amount) * (dish.quantity || 1);
+            if (summary[name]) {
+              summary[name].amount += parsedAmount;
+            } else {
+              summary[name] = {
+                amount: parsedAmount,
+                unit: unit
+              };
+            }
           } else {
-            summary[ingredient] = (summary[ingredient] || 0) + 1;
+            const qty = dish.quantity || 1;
+            if (summary[ingredient]) {
+              summary[ingredient] += qty;
+            } else {
+              summary[ingredient] = qty;
+            }
           }
         });
       });
     });
-    return Object.entries(summary).map(([name, amount]) => ({
+    return Object.entries(summary).map(([name, data]) => ({
       name,
-      amount
+      amount: typeof data === 'object' ? `${data.amount}${data.unit}` : `${data}份`
     }));
   };
   const ingredientSummary = getIngredientSummary();
-  React.useEffect(() => {
-    setOrders(mockOrders);
-  }, []);
   return <div className="min-h-screen bg-gradient-to-br from-[#FCEEB8] via-[#FF8B4E] to-[#FF6B35] pb-20">
       <div className="max-w-6xl mx-auto p-6">
         {/* 头部区域 */}
@@ -140,6 +219,12 @@ export default function FamilyChef(props) {
             }}>
                 家庭大厨工作台
               </h1>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-[#8B7355]" style={{
+            fontFamily: 'Nunito'
+          }}>
+              <Users className="h-4 w-4" />
+              <span>{currentUser.nickName || currentUser.name || '大厨'}</span>
             </div>
           </div>
 
@@ -163,8 +248,22 @@ export default function FamilyChef(props) {
           </div>
         </div>
 
+        {/* 加载状态 */}
+        {loading && <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 text-[#FF6B35] animate-spin" />
+            <span className="ml-2 text-[#8B7355]" style={{
+          fontFamily: 'Nunito'
+        }}>加载中...</span>
+          </div>}
+
         {/* 点菜汇总内容 */}
-        {activeTab === 'orders' && <div className="grid gap-4">
+        {!loading && activeTab === 'orders' && <div className="grid gap-4">
+            {orders.length === 0 && <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
+                <Users className="h-12 w-12 text-[#FF8B4E] mx-auto mb-3" />
+                <p className="text-[#8B7355]" style={{
+            fontFamily: 'Nunito'
+          }}>暂无订单数据</p>
+              </div>}
             {orders.map(order => <div key={order.id} className="bg-white rounded-2xl shadow-xl p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
@@ -249,13 +348,18 @@ export default function FamilyChef(props) {
           </div>}
 
         {/* 备菜清单内容 */}
-        {activeTab === 'ingredients' && <div className="bg-white rounded-3xl shadow-xl p-6">
+        {!loading && activeTab === 'ingredients' && <div className="bg-white rounded-3xl shadow-xl p-6">
             <h2 className="text-2xl font-bold text-[#FF6B35] mb-6" style={{
           fontFamily: 'Quicksand'
         }}>
               <ListChecks className="h-8 w-8 inline mr-2" />
               备菜清单汇总
             </h2>
+            {ingredientSummary.length === 0 && <div className="text-center py-8">
+                <p className="text-[#8B7355]" style={{
+            fontFamily: 'Nunito'
+          }}>暂无备菜数据</p>
+              </div>}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {ingredientSummary.map((item, index) => <div key={index} className="bg-[#FCEEB8] rounded-xl p-4 border-2 border-[#FF8B4E] border-dashed">
                   <div className="flex items-center gap-2 mb-2">
@@ -276,29 +380,33 @@ export default function FamilyChef(props) {
           </div>}
 
         {/* 烹饪指导内容 */}
-        {activeTab === 'tutorials' && <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {[1, 2, 3, 4].map(index => <div key={index} className="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-shadow">
-                <div className="h-40 bg-gradient-to-br from-[#FF8B4E] to-[#FF6B35] flex items-center justify-center">
-                  <BookOpen className="h-16 w-16 text-white" />
+        {!loading && activeTab === 'tutorials' && <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {dishesData.map(dish => <div key={dish._id} className="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-shadow">
+                <div className="h-40 bg-gradient-to-br from-[#FF8B4E] to-[#FF6B35] flex items-center justify-center" style={{
+            backgroundImage: dish.image ? `url(${dish.image})` : undefined,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center'
+          }}>
+                  {!dish.image && <BookOpen className="h-16 w-16 text-white" />}
                 </div>
                 <div className="p-6">
                   <h3 className="text-xl font-bold text-[#FF6B35] mb-2" style={{
               fontFamily: 'Quicksand'
             }}>
-                    烹饪教程 {index}
+                    {dish.name}
                   </h3>
                   <p className="text-sm text-[#8B7355] mb-4" style={{
               fontFamily: 'Nunito'
             }}>
-                    学习如何制作美味菜品，提升厨艺水平
+                    {dish.cuisine || '家常菜'} · {dish.nutrition && dish.nutrition.description ? dish.nutrition.description : '美味佳肴'}
                   </p>
                   <div className="flex items-center gap-2 text-sm text-[#8B7355] mb-4" style={{
               fontFamily: 'Nunito'
             }}>
                     <Play className="h-4 w-4" />
-                    <span>15分钟</span>
+                    <span>{dish.ingredients ? dish.ingredients.length + '种配料' : '待准备'}</span>
                   </div>
-                  <Button className="w-full bg-[#FF8B4E] text-white h-10 font-bold rounded-xl shadow-lg hover:bg-[#FF6B35]" style={{
+                  <Button className="w-full bg-[#FF8B4E] text-white h-10 font-bold rounded-xl shadow-lg hover:bg-[#FF6B35]" onClick={() => handleShowCookingGuide(dish)} style={{
               fontFamily: 'Quicksand'
             }}>
                     开始学习
@@ -323,6 +431,11 @@ export default function FamilyChef(props) {
             </div>
 
             <div className="space-y-6">
+              {/* 菜品图片 */}
+              {activeCooking.image && <div className="rounded-xl overflow-hidden mb-4">
+                  <img src={activeCooking.image} alt={activeCooking.name} className="w-full h-48 object-cover" />
+                </div>}
+
               {/* 详细配菜调料 */}
               <div className="bg-[#FCEEB8] rounded-xl p-4">
                 <h3 className="text-lg font-semibold text-[#FF6B35] mb-3" style={{
@@ -373,6 +486,22 @@ export default function FamilyChef(props) {
                 </div>
               </div>
 
+              {/* 营养信息 */}
+              {activeCooking.nutrition && <div className="bg-[#9CCF4E] rounded-xl p-4">
+                  <h3 className="text-lg font-semibold text-white mb-3" style={{
+              fontFamily: 'Quicksand'
+            }}>
+                    <Info className="h-5 w-5 inline mr-2" />
+                    营养信息
+                  </h3>
+                  <div className="grid grid-cols-2 gap-2 text-sm text-white">
+                    <div>热量: {activeCooking.nutrition.calories || '-'}kcal</div>
+                    <div>蛋白质: {activeCooking.nutrition.protein || '-'}g</div>
+                    <div>碳水: {activeCooking.nutrition.carbs || '-'}g</div>
+                    <div>脂肪: {activeCooking.nutrition.fat || '-'}g</div>
+                  </div>
+                </div>}
+
               {/* 烹饪小贴士 */}
               <div className="bg-[#9CCF4E] rounded-xl p-4">
                 <h3 className="text-lg font-semibold text-white mb-3" style={{
@@ -384,7 +513,7 @@ export default function FamilyChef(props) {
                 <p className="text-sm text-white" style={{
               fontFamily: 'Nunito'
             }}>
-                  注意火候控制，确保食材新鲜，调味适中...
+                  {activeCooking.nutrition && activeCooking.nutrition.description ? activeCooking.nutrition.description : '注意火候控制，确保食材新鲜，调味适中...'}
                 </p>
               </div>
             </div>
