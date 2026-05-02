@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 // @ts-ignore;
 import { useToast, Button } from '@/components/ui';
 // @ts-ignore;
-import { ChefHat, ShoppingCart, BookOpen, Play, Clock, Users, CheckCircle, ListChecks, Video, Image as ImageIcon, Info } from 'lucide-react';
+import { ChefHat, ShoppingCart, BookOpen, Play, Clock, Users, CheckCircle, ListChecks, Video, Image as ImageIcon, Info, MessageSquare } from 'lucide-react';
 
 // @ts-ignore;
 import TabBar from '@/components/TabBar';
@@ -210,7 +210,7 @@ export default function FamilyChef(props) {
           }}>
                     <div className="flex items-start gap-2">
                       <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md">
-                        <Cart className="h-4 w-4 text-[#FF6B35]" />
+                        <MessageSquare className="h-4 w-4 text-[#FF6B35]" />
                       </div>
                       <p className="text-sm text-white" style={{
                 fontFamily: 'Nunito'
