@@ -1,0 +1,49 @@
+{
+  "name": "dishes",
+  "title": "菜品",
+  "schemas": [
+    {
+      "name": "name",
+      "title": "菜品名称",
+      "type": "String"
+    },
+    {
+      "name": "image",
+      "title": "菜品图片",
+      "type": "Image"
+    },
+    {
+      "name": "cuisine",
+      "title": "菜系",
+      "type": "String"
+    },
+    {
+      "name": "price",
+      "title": "价格",
+      "type": "Number"
+    },
+    {
+      "name": "isCustom",
+      "title": "是否自定义",
+      "type": "Boolean"
+    },
+    {
+      "name": "nutrition",
+      "title": "营养信息",
+      "type": "Object"
+    },
+    {
+      "name": "ingredients",
+      "title": "配料",
+      "type": "Array",
+      "items": {
+        "type": "String"
+      }
+    },
+    {
+      "name": "businessType",
+      "title": "业务类型",
+      "type": "String"
+    }
+  ]
+}

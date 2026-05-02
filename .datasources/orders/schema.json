@@ -1,0 +1,49 @@
+{
+  "name": "orders",
+  "title": "订单",
+  "schemas": [
+    {
+      "name": "userName",
+      "title": "用户名称",
+      "type": "String"
+    },
+    {
+      "name": "dishes",
+      "title": "菜品列表",
+      "type": "Array",
+      "items": {
+        "type": "Object"
+      }
+    },
+    {
+      "name": "message",
+      "title": "留言",
+      "type": "MultiLineString"
+    },
+    {
+      "name": "boardColor",
+      "title": "留言板颜色",
+      "type": "String"
+    },
+    {
+      "name": "status",
+      "title": "订单状态",
+      "type": "String"
+    },
+    {
+      "name": "total",
+      "title": "总金额",
+      "type": "Number"
+    },
+    {
+      "name": "businessType",
+      "title": "业务类型",
+      "type": "String"
+    },
+    {
+      "name": "syncTarget",
+      "title": "同步目标",
+      "type": "String"
+    }
+  ]
+}

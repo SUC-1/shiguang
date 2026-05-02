@@ -1,0 +1,29 @@
+{
+  "name": "menu_templates",
+  "title": "菜单模板",
+  "schemas": [
+    {
+      "name": "name",
+      "title": "模板名称",
+      "type": "String"
+    },
+    {
+      "name": "description",
+      "title": "描述",
+      "type": "MultiLineString"
+    },
+    {
+      "name": "items",
+      "title": "菜品列表",
+      "type": "Array",
+      "items": {
+        "type": "String"
+      }
+    },
+    {
+      "name": "image",
+      "title": "模板图片",
+      "type": "Image"
+    }
+  ]
+}

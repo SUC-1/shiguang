@@ -1,0 +1,10 @@
+[
+  {
+    "_id": "1",
+    "qrCode": "https://via.placeholder.com/300x300/FF8B4E/FFFFFF?text=QR+CODE",
+    "isActive": true,
+    "description": "餐厅收款码，支持微信、支付宝等多种支付方式",
+    "createdAt": 1746240000000,
+    "updatedAt": 1746240000000
+  }
+]

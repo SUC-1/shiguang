@@ -1,0 +1,44 @@
+[
+  {
+    "_id": "1",
+    "name": "川菜精选套餐",
+    "description": "包含宫保鸡丁、麻婆豆腐、水煮牛肉等经典川菜",
+    "items": [
+      "宫保鸡丁",
+      "麻婆豆腐",
+      "水煮牛肉",
+      "回锅肉"
+    ],
+    "image": "https://images.unsplash.com/photo-1566757033849-0d6560c6318a?w=500",
+    "createdAt": 1746240000000,
+    "updatedAt": 1746240000000
+  },
+  {
+    "_id": "2",
+    "name": "家常菜套餐",
+    "description": "适合家庭聚餐的温馨家常菜",
+    "items": [
+      "红烧狮子头",
+      "糖醋排骨",
+      "清蒸鲈鱼",
+      "家常豆腐"
+    ],
+    "image": "https://images.unsplash.com/photo-1551888847-bd7d405c0b6e?w=500",
+    "createdAt": 1746240000000,
+    "updatedAt": 1746240000000
+  },
+  {
+    "_id": "3",
+    "name": "素食套餐",
+    "description": "健康美味的素食选择",
+    "items": [
+      "麻婆豆腐",
+      "家常豆腐",
+      "清炒时蔬",
+      "素炒面"
+    ],
+    "image": "https://images.unsplash.com/photo-1552364088-0568b0c08e7c?w=500",
+    "createdAt": 1746240000000,
+    "updatedAt": 1746240000000
+  }
+]

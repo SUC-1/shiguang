@@ -1,0 +1,138 @@
+[
+  {
+    "_id": "1",
+    "userName": "小明",
+    "dishes": [
+      {
+        "name": "红烧狮子头",
+        "quantity": 2,
+        "price": 48
+      },
+      {
+        "name": "宫保鸡丁",
+        "quantity": 1,
+        "price": 38
+      },
+      {
+        "name": "清蒸鲈鱼",
+        "quantity": 1,
+        "price": 58
+      }
+    ],
+    "message": "今天想吃清淡一点的，鱼要新鲜哦！",
+    "boardColor": "#FF8B4E",
+    "status": "pending",
+    "businessType": "family",
+    "syncTarget": "all",
+    "createdAt": 1746240180000,
+    "updatedAt": 1746240180000
+  },
+  {
+    "_id": "2",
+    "userName": "小红",
+    "dishes": [
+      {
+        "name": "麻婆豆腐",
+        "quantity": 1,
+        "price": 28
+      },
+      {
+        "name": "水煮牛肉",
+        "quantity": 2,
+        "price": 58
+      }
+    ],
+    "message": "要麻辣味浓郁的！",
+    "boardColor": "#9CCF4E",
+    "status": "cooking",
+    "businessType": "family",
+    "syncTarget": "chef",
+    "createdAt": 1746240360000,
+    "updatedAt": 1746240360000
+  },
+  {
+    "_id": "3",
+    "userName": "爸爸",
+    "dishes": [
+      {
+        "name": "糖醋排骨",
+        "quantity": 1,
+        "price": 68
+      }
+    ],
+    "message": "少放糖",
+    "boardColor": "#E85A42",
+    "status": "completed",
+    "businessType": "family",
+    "syncTarget": "all",
+    "createdAt": 1746240720000,
+    "updatedAt": 1746240720000
+  },
+  {
+    "_id": "4",
+    "userName": "张三",
+    "dishes": [
+      {
+        "name": "宫保鸡丁",
+        "quantity": 2,
+        "price": 38
+      },
+      {
+        "name": "麻婆豆腐",
+        "quantity": 1,
+        "price": 28
+      }
+    ],
+    "message": "",
+    "boardColor": "#FF8B4E",
+    "status": "pending",
+    "total": 104,
+    "businessType": "dining",
+    "syncTarget": "",
+    "createdAt": 1746240880000,
+    "updatedAt": 1746240880000
+  },
+  {
+    "_id": "5",
+    "userName": "李四",
+    "dishes": [
+      {
+        "name": "水煮牛肉",
+        "quantity": 1,
+        "price": 58
+      },
+      {
+        "name": "糖醋排骨",
+        "quantity": 2,
+        "price": 68
+      }
+    ],
+    "message": "",
+    "boardColor": "#FF6B35",
+    "status": "cooking",
+    "total": 194,
+    "businessType": "dining",
+    "syncTarget": "",
+    "createdAt": 1746240700000,
+    "updatedAt": 1746240700000
+  },
+  {
+    "_id": "6",
+    "userName": "王五",
+    "dishes": [
+      {
+        "name": "清蒸鲈鱼",
+        "quantity": 1,
+        "price": 58
+      }
+    ],
+    "message": "",
+    "boardColor": "#9CCF4E",
+    "status": "completed",
+    "total": 58,
+    "businessType": "dining",
+    "syncTarget": "",
+    "createdAt": 1746240400000,
+    "updatedAt": 1746240400000
+  }
+]

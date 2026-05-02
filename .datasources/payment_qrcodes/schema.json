@@ -1,0 +1,21 @@
+{
+  "name": "payment_qrcodes",
+  "title": "收款码",
+  "schemas": [
+    {
+      "name": "qrCode",
+      "title": "收款码图片",
+      "type": "Image"
+    },
+    {
+      "name": "isActive",
+      "title": "是否启用",
+      "type": "Boolean"
+    },
+    {
+      "name": "description",
+      "title": "说明",
+      "type": "MultiLineString"
+    }
+  ]
+}

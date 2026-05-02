@@ -1,0 +1,189 @@
+[
+  {
+    "_id": "1",
+    "name": "红烧狮子头",
+    "image": "https://images.unsplash.com/photo-1551888847-bd7d405c0b6e?w=500",
+    "cuisine": "八大菜系",
+    "price": 48,
+    "isCustom": false,
+    "nutrition": {
+      "calories": 350,
+      "protein": 25,
+      "carbs": 15,
+      "fat": 20,
+      "description": "传统苏菜，肉质鲜美，营养丰富"
+    },
+    "ingredients": [
+      "猪肉500g",
+      "鸡蛋2个",
+      "淀粉50g",
+      "葱姜适量"
+    ],
+    "businessType": "family",
+    "createdAt": 1746240000000,
+    "updatedAt": 1746240000000
+  },
+  {
+    "_id": "2",
+    "name": "宫保鸡丁",
+    "image": "https://images.unsplash.com/photo-1566757033849-0d6560c6318a?w=500",
+    "cuisine": "八大菜系",
+    "price": 38,
+    "isCustom": false,
+    "nutrition": {
+      "calories": 320,
+      "protein": 28,
+      "carbs": 12,
+      "fat": 18,
+      "description": "四川名菜，酸甜可口，富含蛋白质"
+    },
+    "ingredients": [
+      "鸡胸肉300g",
+      "花生米100g",
+      "干辣椒10个",
+      "花椒适量"
+    ],
+    "businessType": "family",
+    "createdAt": 1746240000000,
+    "updatedAt": 1746240000000
+  },
+  {
+    "_id": "3",
+    "name": "清蒸鲈鱼",
+    "image": "https://images.unsplash.com/photo-1548842348-975042294475?w=500",
+    "cuisine": "八大菜系",
+    "price": 58,
+    "isCustom": false,
+    "nutrition": {
+      "calories": 280,
+      "protein": 30,
+      "carbs": 5,
+      "fat": 10,
+      "description": "福建名菜，鱼肉鲜嫩，低脂健康"
+    },
+    "ingredients": [
+      "鲈鱼1条",
+      "葱姜丝适量",
+      "蒸鱼豉油2勺"
+    ],
+    "businessType": "family",
+    "createdAt": 1746240000000,
+    "updatedAt": 1746240000000
+  },
+  {
+    "_id": "4",
+    "name": "麻婆豆腐",
+    "image": "https://images.unsplash.com/photo-1552364088-0568b0c08e7c?w=500",
+    "cuisine": "八大菜系",
+    "price": 28,
+    "isCustom": false,
+    "nutrition": {
+      "calories": 250,
+      "protein": 15,
+      "carbs": 10,
+      "fat": 15,
+      "description": "四川经典，麻辣鲜香，营养丰富"
+    },
+    "ingredients": [
+      "豆腐400g",
+      "肉末100g",
+      "豆瓣酱2勺",
+      "花椒粉适量"
+    ],
+    "businessType": "family",
+    "createdAt": 1746240000000,
+    "updatedAt": 1746240000000
+  },
+  {
+    "_id": "5",
+    "name": "糖醋排骨",
+    "image": "https://images.unsplash.com/photo-1585393187890-8103d9315a2a?w=500",
+    "cuisine": "八大菜系",
+    "price": 68,
+    "isCustom": false,
+    "nutrition": {
+      "calories": 380,
+      "protein": 22,
+      "carbs": 20,
+      "fat": 25,
+      "description": "江苏名菜，酸甜适中，美味可口"
+    },
+    "ingredients": [
+      "排骨500g",
+      "白糖3勺",
+      "醋2勺",
+      "生抽1勺"
+    ],
+    "businessType": "family",
+    "createdAt": 1746240000000,
+    "updatedAt": 1746240000000
+  },
+  {
+    "_id": "6",
+    "name": "水煮牛肉",
+    "image": "https://images.unsplash.com/photo-1548325019-f648356748b2?w=500",
+    "cuisine": "八大菜系",
+    "price": 58,
+    "isCustom": false,
+    "nutrition": {
+      "calories": 420,
+      "protein": 35,
+      "carbs": 8,
+      "fat": 30,
+      "description": "四川名菜，麻辣爽口，蛋白质丰富"
+    },
+    "ingredients": [
+      "牛肉400g",
+      "豆芽200g",
+      "辣椒适量",
+      "蒜苗2根"
+    ],
+    "businessType": "family",
+    "createdAt": 1746240000000,
+    "updatedAt": 1746240000000
+  },
+  {
+    "_id": "7",
+    "name": "宫保鸡丁",
+    "image": "https://images.unsplash.com/photo-1566757033849-0d6560c6318a?w=500",
+    "cuisine": "四川菜系",
+    "price": 38,
+    "isCustom": false,
+    "businessType": "dining",
+    "createdAt": 1746240000000,
+    "updatedAt": 1746240000000
+  },
+  {
+    "_id": "8",
+    "name": "麻婆豆腐",
+    "image": "https://images.unsplash.com/photo-1552364088-0568b0c08e7c?w=500",
+    "cuisine": "四川菜系",
+    "price": 28,
+    "isCustom": false,
+    "businessType": "dining",
+    "createdAt": 1746240000000,
+    "updatedAt": 1746240000000
+  },
+  {
+    "_id": "9",
+    "name": "红烧狮子头",
+    "image": "https://images.unsplash.com/photo-1551888847-bd7d405c0b6e?w=500",
+    "cuisine": "江苏菜系",
+    "price": 48,
+    "isCustom": false,
+    "businessType": "dining",
+    "createdAt": 1746240000000,
+    "updatedAt": 1746240000000
+  },
+  {
+    "_id": "10",
+    "name": "特色红烧肉",
+    "image": "https://images.unsplash.com/photo-1585393187890-8103d9315a2a?w=500",
+    "cuisine": "自定义",
+    "price": 58,
+    "isCustom": true,
+    "businessType": "dining",
+    "createdAt": 1746240000000,
+    "updatedAt": 1746240000000
+  }
+]
