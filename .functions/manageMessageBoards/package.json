@@ -1,0 +1,9 @@
+{
+  "name": "manage-message-boards",
+  "version": "1.0.0",
+  "description": "留言板云函数，支持发送留言、查询留言列表、删除留言",
+  "main": "index.js",
+  "dependencies": {
+    "@cloudbase/node-sdk": "^3.3.7"
+  }
+}

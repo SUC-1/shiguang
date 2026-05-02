@@ -1,0 +1,9 @@
+{
+  "name": "manage-orders",
+  "version": "1.0.0",
+  "description": "订单管理云函数，支持创建订单、查询订单列表、更新订单状态",
+  "main": "index.js",
+  "dependencies": {
+    "@cloudbase/node-sdk": "^3.3.7"
+  }
+}
