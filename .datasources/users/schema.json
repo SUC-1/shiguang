@@ -1,0 +1,36 @@
+{
+  "name": "users",
+  "title": "用户信息",
+  "schemas": [
+    {
+      "name": "openid",
+      "title": "微信OpenID",
+      "type": "String"
+    },
+    {
+      "name": "nickname",
+      "title": "昵称",
+      "type": "String"
+    },
+    {
+      "name": "phone",
+      "title": "手机号",
+      "type": "String"
+    },
+    {
+      "name": "role",
+      "title": "身份角色",
+      "type": "String"
+    },
+    {
+      "name": "avatar",
+      "title": "头像",
+      "type": "Image"
+    },
+    {
+      "name": "isActive",
+      "title": "是否激活",
+      "type": "Boolean"
+    }
+  ]
+}

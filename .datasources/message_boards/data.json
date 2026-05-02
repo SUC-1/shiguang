@@ -1,0 +1,98 @@
+[
+  {
+    "_id": "1",
+    "content": "今天想吃清淡一点的，鱼要新鲜哦！",
+    "backgroundColor": "#FF8B4E",
+    "senderId": "user_xiaoming",
+    "senderName": "小明",
+    "recipientType": "chef",
+    "recipientId": "",
+    "category": "order",
+    "createdAt": 1777730369549,
+    "updatedAt": 1777730369549
+  },
+  {
+    "_id": "2",
+    "content": "要麻辣味浓郁的！",
+    "backgroundColor": "#9CCF4E",
+    "senderId": "user_xiaohong",
+    "senderName": "小红",
+    "recipientType": "chef",
+    "recipientId": "",
+    "category": "order",
+    "createdAt": 1777730368549,
+    "updatedAt": 1777730368549
+  },
+  {
+    "_id": "3",
+    "content": "少放糖",
+    "backgroundColor": "#E85A42",
+    "senderId": "user_baba",
+    "senderName": "爸爸",
+    "recipientType": "chef",
+    "recipientId": "",
+    "category": "order",
+    "createdAt": 1777730367549,
+    "updatedAt": 1777730367549
+  },
+  {
+    "_id": "4",
+    "content": "今天妈妈做的菜很好吃，感谢！",
+    "backgroundColor": "#FCEEB8",
+    "senderId": "user_xiaobao",
+    "senderName": "小宝",
+    "recipientType": "all",
+    "recipientId": "",
+    "category": "daily",
+    "createdAt": 1777730366549,
+    "updatedAt": 1777730366549
+  },
+  {
+    "_id": "5",
+    "content": "明天的晚餐我准备做红烧狮子头，大家记得提前准备好胃口！",
+    "backgroundColor": "#FF6B35",
+    "senderId": "user_mama",
+    "senderName": "妈妈",
+    "recipientType": "all",
+    "recipientId": "",
+    "category": "announcement",
+    "createdAt": 1777730365549,
+    "updatedAt": 1777730365549
+  },
+  {
+    "_id": "6",
+    "content": "小红，你上次说的那个宫保鸡丁的做法可以教我吗？",
+    "backgroundColor": "#9CCF4E",
+    "senderId": "user_xiaoming",
+    "senderName": "小明",
+    "recipientType": "member",
+    "recipientId": "user_xiaohong",
+    "category": "daily",
+    "createdAt": 1777730364549,
+    "updatedAt": 1777730364549
+  },
+  {
+    "_id": "7",
+    "content": "麻婆豆腐的花椒不要太多，上次太麻了！",
+    "backgroundColor": "#FF8B4E",
+    "senderId": "user_xiaobao",
+    "senderName": "小宝",
+    "recipientType": "chef",
+    "recipientId": "",
+    "category": "order",
+    "createdAt": 1777730363549,
+    "updatedAt": 1777730363549
+  },
+  {
+    "_id": "8",
+    "content": "这个周末我们尝试一下新的菜谱吧？",
+    "backgroundColor": "#E85A42",
+    "senderId": "user_baba",
+    "senderName": "爸爸",
+    "recipientType": "all",
+    "recipientId": "",
+    "category": "daily",
+    "createdAt": 1777730362549,
+    "updatedAt": 1777730362549
+  }
+]

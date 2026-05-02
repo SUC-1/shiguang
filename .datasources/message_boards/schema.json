@@ -1,0 +1,41 @@
+{
+  "name": "message_boards",
+  "title": "留言板",
+  "schemas": [
+    {
+      "name": "content",
+      "title": "留言内容",
+      "type": "MultiLineString"
+    },
+    {
+      "name": "backgroundColor",
+      "title": "背景色",
+      "type": "String"
+    },
+    {
+      "name": "senderId",
+      "title": "发送人ID",
+      "type": "String"
+    },
+    {
+      "name": "senderName",
+      "title": "发送人昵称",
+      "type": "String"
+    },
+    {
+      "name": "recipientType",
+      "title": "接收人类型",
+      "type": "String"
+    },
+    {
+      "name": "recipientId",
+      "title": "特定接收人ID",
+      "type": "String"
+    },
+    {
+      "name": "category",
+      "title": "留言分类",
+      "type": "String"
+    }
+  ]
+}
