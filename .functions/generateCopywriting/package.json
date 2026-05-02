@@ -1,0 +1,9 @@
+{
+  "name": "generate-copywriting",
+  "version": "1.0.0",
+  "description": "生成小红书、朋友圈等平台的种草文案",
+  "main": "index.js",
+  "dependencies": {
+    "@cloudbase/node-sdk": "^3.3.7"
+  }
+}

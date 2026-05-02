@@ -1,0 +1,23 @@
+{
+  "examples": [
+    {
+      "mediaType": "image",
+      "mediaUrl": "https://example.com/image.jpg",
+      "description": "展示一款新上市的护肤品，强调其天然成分和保湿效果",
+      "platforms": ["xiaohongshu", "wechat"],
+      "style": "活泼",
+      "count": 1,
+      "results": [
+        {
+          "platform": "xiaohongshu",
+          "title": "这款保湿神器真的绝了！✨",
+          "content": "姐妹们！最近发现了这款护肤品，完全被惊艳到了😍\n天然成分 + 超强保湿，使用后皮肤水嫩嫩\n已经空瓶3次了，真心推荐给大家！",
+          "tags": ["#护肤推荐", "#保湿神器", "#天然成分", "#好物分享"],
+          "emojis": ["✨", "😍", "💖", "🌟"]
+        }
+      ],
+      "createdAt": "2025-01-15T10:30:00.000Z",
+      "requestId": "test-request-001"
+    }
+  ]
+}

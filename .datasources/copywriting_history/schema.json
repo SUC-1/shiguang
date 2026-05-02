@@ -1,0 +1,52 @@
+{
+  "collectionName": "copywriting_history",
+  "fields": [
+    {
+      "name": "mediaType",
+      "type": "string",
+      "description": "媒体类型：image 或 video"
+    },
+    {
+      "name": "mediaUrl",
+      "type": "string",
+      "description": "媒体文件 URL"
+    },
+    {
+      "name": "description",
+      "type": "string",
+      "description": "用户提供的描述文字"
+    },
+    {
+      "name": "platforms",
+      "type": "array",
+      "elementType": "string",
+      "description": "生成的平台列表"
+    },
+    {
+      "name": "style",
+      "type": "string",
+      "description": "文案风格"
+    },
+    {
+      "name": "count",
+      "type": "number",
+      "description": "生成文案数量"
+    },
+    {
+      "name": "results",
+      "type": "array",
+      "elementType": "object",
+      "description": "生成的文案结果列表"
+    },
+    {
+      "name": "createdAt",
+      "type": "string",
+      "description": "创建时间（ISO 格式）"
+    },
+    {
+      "name": "requestId",
+      "type": "string",
+      "description": "请求 ID"
+    }
+  ]
+}
