@@ -1,0 +1,9 @@
+{
+  "name": "manage-users",
+  "version": "1.0.0",
+  "description": "用户管理云函数，支持创建用户、查询用户列表、更新用户信息、删除用户",
+  "main": "index.js",
+  "dependencies": {
+    "@cloudbase/node-sdk": "^3.3.7"
+  }
+}

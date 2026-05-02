@@ -1,0 +1,9 @@
+{
+  "name": "manage-payment-qrcodes",
+  "version": "1.0.0",
+  "description": "付款二维码管理云函数，支持创建收款码、查询收款码列表、更新收款码、删除收款码",
+  "main": "index.js",
+  "dependencies": {
+    "@cloudbase/node-sdk": "^3.3.7"
+  }
+}

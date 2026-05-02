@@ -1,0 +1,9 @@
+{
+  "name": "manage-menu-templates",
+  "version": "1.0.0",
+  "description": "菜单模板管理云函数，支持创建模板、查询模板列表、更新模板、删除模板",
+  "main": "index.js",
+  "dependencies": {
+    "@cloudbase/node-sdk": "^3.3.7"
+  }
+}

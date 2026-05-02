@@ -1,9 +1,9 @@
 // @ts-ignore;
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 // @ts-ignore;
 import { useToast, Button, Input } from '@/components/ui';
 // @ts-ignore;
-import { ShoppingCart, Search, Heart, MessageSquare, Expand, Check, X, ChefHat, Sparkles } from 'lucide-react';
+import { ShoppingCart, Search, Heart, MessageSquare, Expand, Check, X, ChefHat, Sparkles, Loader2, Users } from 'lucide-react';
 
 // @ts-ignore;
 import TabBar from '@/components/TabBar';
@@ -26,6 +26,9 @@ export default function FamilyMember(props) {
   const [showImageModal, setShowImageModal] = useState(false);
   const [modalImage, setModalImage] = useState(null);
   const [activeTab, setActiveTab] = useState('home');
+  const [menuData, setMenuData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const handleAICopywriting = () => {
     navigateTo({
       pageId: 'ai-copywriting',
@@ -33,80 +36,61 @@ export default function FamilyMember(props) {
     });
   };
 
-  // 模拟菜单数据
-  const menuData = [{
-    id: 1,
-    name: '红烧狮子头',
-    image: 'https://images.unsplash.com/photo-1551888847-bd7d405c0b6e?w=500',
-    cuisine: '八大菜系',
-    nutrition: {
-      calories: 350,
-      protein: 25,
-      carbs: 15,
-      fat: 20,
-      description: '传统苏菜，肉质鲜美，营养丰富'
+  // 获取菜品数据 — 调用 manageDishes 云函数
+  const fetchDishes = async () => {
+    try {
+      const result = await props.$w.cloud.callFunction({
+        name: 'manageDishes',
+        data: {
+          action: 'query',
+          queryType: 'byBusinessType',
+          businessType: 'family',
+          page: 1,
+          pageSize: 50
+        }
+      });
+      if (result.result && result.result.success) {
+        const fetched = (result.result.data && result.result.data.dishes || []).map(d => ({
+          id: d._id,
+          name: d.name,
+          image: d.image,
+          cuisine: d.cuisine,
+          price: d.price,
+          nutrition: d.nutrition || {
+            calories: 0,
+            protein: 0,
+            carbs: 0,
+            fat: 0,
+            description: ''
+          },
+          ingredients: d.ingredients || []
+        }));
+        setMenuData(fetched);
+      } else {
+        toast({
+          variant: 'destructive',
+          title: '获取菜品失败',
+          description: result.result && result.result.message || '请稍后重试'
+        });
+      }
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: '获取菜品失败',
+        description: error.message || '网络错误，请稍后重试'
+      });
     }
-  }, {
-    id: 2,
-    name: '宫保鸡丁',
-    image: 'https://images.unsplash.com/photo-1566757033849-0d6560c6318a?w=500',
-    cuisine: '八大菜系',
-    nutrition: {
-      calories: 320,
-      protein: 28,
-      carbs: 12,
-      fat: 18,
-      description: '四川名菜，酸甜可口，富含蛋白质'
-    }
-  }, {
-    id: 3,
-    name: '清蒸鲈鱼',
-    image: 'https://images.unsplash.com/photo-1548842348-975042294475?w=500',
-    cuisine: '八大菜系',
-    nutrition: {
-      calories: 280,
-      protein: 30,
-      carbs: 5,
-      fat: 10,
-      description: '福建名菜，鱼肉鲜嫩，低脂健康'
-    }
-  }, {
-    id: 4,
-    name: '麻婆豆腐',
-    image: 'https://images.unsplash.com/photo-1552364088-0568b0c08e7c?w=500',
-    cuisine: '八大菜系',
-    nutrition: {
-      calories: 250,
-      protein: 15,
-      carbs: 10,
-      fat: 15,
-      description: '四川经典，麻辣鲜香，营养丰富'
-    }
-  }, {
-    id: 5,
-    name: '糖醋排骨',
-    image: 'https://images.unsplash.com/photo-1585393187890-8103d9315a2a?w=500',
-    cuisine: '八大菜系',
-    nutrition: {
-      calories: 380,
-      protein: 22,
-      carbs: 20,
-      fat: 25,
-      description: '江苏名菜，酸甜适中，美味可口'
-    }
-  }, {
-    id: 6,
-    name: '水煮牛肉',
-    image: 'https://images.unsplash.com/photo-1548325019-f648356748b2?w=500',
-    cuisine: '八大菜系',
-    nutrition: {
-      calories: 420,
-      protein: 35,
-      carbs: 8,
-      fat: 30,
-      description: '四川名菜，麻辣爽口，蛋白质丰富'
-    }
-  }];
+  };
+
+  // 页面初始化加载数据
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      await fetchDishes();
+      setLoading(false);
+    };
+    loadData();
+  }, []);
   const boardColors = [{
     color: '#FF8B4E',
     name: '温暖橙'
@@ -141,6 +125,7 @@ export default function FamilyMember(props) {
       });
     }
   };
+  // 提交订单 — 调用 manageOrders 云函数
   const handleSubmitOrder = async () => {
     if (selectedDishes.length === 0) {
       toast({
@@ -150,23 +135,64 @@ export default function FamilyMember(props) {
       });
       return;
     }
+    setSubmitting(true);
     try {
-      toast({
-        variant: 'default',
-        title: '订单提交成功',
-        description: '已同步给大厨，等待烹饪完成'
+      const orderDishes = selectedDishes.map(d => ({
+        name: d.name,
+        quantity: 1,
+        price: d.price || 0
+      }));
+      const total = orderDishes.reduce((sum, d) => sum + d.price * d.quantity, 0);
+      const result = await props.$w.cloud.callFunction({
+        name: 'manageOrders',
+        data: {
+          action: 'create',
+          userName: currentUser.nickName || currentUser.name || '家庭成员',
+          dishes: orderDishes,
+          message: message || '',
+          boardColor: boardColor,
+          businessType: 'family',
+          syncTarget: syncTarget
+        }
       });
-      setSelectedDishes([]);
-      setMessage('');
+      if (result.result && result.result.success) {
+        toast({
+          variant: 'default',
+          title: '订单提交成功',
+          description: '已同步给大厨，等待烹饪完成'
+        });
+        setSelectedDishes([]);
+        setMessage('');
+      } else {
+        toast({
+          variant: 'destructive',
+          title: '订单提交失败',
+          description: result.result && result.result.message || '请重试'
+        });
+      }
     } catch (error) {
       toast({
         variant: 'destructive',
         title: '订单提交失败',
-        description: error.message || '请重试'
+        description: error.message || '网络错误，请重试'
       });
+    } finally {
+      setSubmitting(false);
     }
   };
   const filteredDishes = menuData.filter(dish => dish.name.toLowerCase().includes(searchQuery.toLowerCase()));
+
+  // 加载状态
+  if (loading) {
+    return <div className="min-h-screen bg-gradient-to-br from-[#FCEEB8] via-[#FF8B4E] to-[#FF6B35] flex items-center justify-center pb-20">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-12 w-12 text-white animate-spin" />
+          <p className="text-white text-lg font-semibold" style={{
+          fontFamily: 'Quicksand'
+        }}>加载中...</p>
+        </div>
+      </div>;
+  }
   return <div className="min-h-screen bg-gradient-to-br from-[#FCEEB8] via-[#FF8B4E] to-[#FF6B35] pb-20">
       <div className="max-w-6xl mx-auto p-6">
         {/* 头部区域 */}
@@ -181,6 +207,12 @@ export default function FamilyMember(props) {
               </h1>
             </div>
             <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 text-sm text-[#8B7355]" style={{
+              fontFamily: 'Nunito'
+            }}>
+                <Users className="h-4 w-4" />
+                <span>{currentUser.nickName || currentUser.name || '家庭成员'}</span>
+              </div>
               <ShoppingCart className="h-6 w-6 text-[#FF8B4E]" />
               <span className="text-lg font-semibold text-[#FF6B35]" style={{
               fontFamily: 'Quicksand'
@@ -197,6 +229,12 @@ export default function FamilyMember(props) {
 
         {/* 菜单网格区域 */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
+          {filteredDishes.length === 0 && <div className="col-span-full bg-white rounded-2xl shadow-xl p-8 text-center">
+              <Heart className="h-12 w-12 text-[#FF8B4E] mx-auto mb-4" />
+              <p className="text-[#8B7355] text-lg" style={{
+            fontFamily: 'Nunito'
+          }}>暂无菜品数据</p>
+            </div>}
           {filteredDishes.map(dish => <div key={dish.id} className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow relative">
               {/* 菜品图片 */}
               <div className="relative h-48 overflow-hidden cursor-pointer" onClick={() => {
@@ -284,10 +322,10 @@ export default function FamilyMember(props) {
             <Input className="w-full bg-[#FCEEB8] border-2 border-[#FF8B4E] rounded-xl h-32" placeholder="写下您的话..." value={message} onChange={e => setMessage(e.target.value)} />
           </div>
 
-          <Button className="w-full bg-[#FF6B35] text-white h-14 text-lg font-bold rounded-xl shadow-lg hover:bg-[#E85A42]" onClick={handleSubmitOrder} style={{
+          <Button className="w-full bg-[#FF6B35] text-white h-14 text-lg font-bold rounded-xl shadow-lg hover:bg-[#E85A42]" onClick={handleSubmitOrder} disabled={submitting} style={{
           fontFamily: 'Quicksand'
         }}>
-            提交订单
+            {submitting ? <><Loader2 className="h-5 w-5 animate-spin inline mr-2" />提交中...</> : '提交订单'}
           </Button>
         </div>
 
@@ -315,19 +353,15 @@ export default function FamilyMember(props) {
                 </Button>
               </div>
 
-              <p className="text-sm text-[#8B7355] mb-4" style={{
+              {currentDish.nutrition && currentDish.nutrition.description && <p className="text-sm text-[#8B7355] mb-4" style={{
             fontFamily: 'Nunito'
-          }}>
-                {currentDish.nutrition.description}
-              </p>
+          }}>{currentDish.nutrition.description}</p>}
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4 mb-4">
                 <div className="bg-[#FCEEB8] rounded-xl p-4">
                   <p className="text-2xl font-bold text-[#FF6B35]" style={{
                 fontFamily: 'Quicksand'
-              }}>
-                    {currentDish.nutrition.calories} kcal
-                  </p>
+              }}>{currentDish.nutrition ? currentDish.nutrition.calories : 0} kcal</p>
                   <p className="text-sm text-[#8B7355]" style={{
                 fontFamily: 'Nunito'
               }}>卡路里</p>
@@ -335,9 +369,7 @@ export default function FamilyMember(props) {
                 <div className="bg-[#FF8B4E] rounded-xl p-4">
                   <p className="text-2xl font-bold text-white" style={{
                 fontFamily: 'Quicksand'
-              }}>
-                    {currentDish.nutrition.protein}g
-                  </p>
+              }}>{currentDish.nutrition ? currentDish.nutrition.protein : 0}g</p>
                   <p className="text-sm text-white" style={{
                 fontFamily: 'Nunito'
               }}>蛋白质</p>
@@ -345,9 +377,7 @@ export default function FamilyMember(props) {
                 <div className="bg-[#FF6B35] rounded-xl p-4">
                   <p className="text-2xl font-bold text-white" style={{
                 fontFamily: 'Quicksand'
-              }}>
-                    {currentDish.nutrition.carbs}g
-                  </p>
+              }}>{currentDish.nutrition ? currentDish.nutrition.carbs : 0}g</p>
                   <p className="text-sm text-white" style={{
                 fontFamily: 'Nunito'
               }}>碳水化合物</p>
@@ -355,14 +385,27 @@ export default function FamilyMember(props) {
                 <div className="bg-[#E85A42] rounded-xl p-4">
                   <p className="text-2xl font-bold text-white" style={{
                 fontFamily: 'Quicksand'
-              }}>
-                    {currentDish.nutrition.fat}g
-                  </p>
+              }}>{currentDish.nutrition ? currentDish.nutrition.fat : 0}g</p>
                   <p className="text-sm text-white" style={{
                 fontFamily: 'Nunito'
               }}>脂肪</p>
                 </div>
               </div>
+
+              {/* 配料信息 */}
+              {currentDish.ingredients && currentDish.ingredients.length > 0 && <div className="bg-[#FCEEB8] rounded-xl p-4">
+                  <h3 className="text-sm font-semibold text-[#FF6B35] mb-3" style={{
+              fontFamily: 'Quicksand'
+            }}>配料清单</h3>
+                  <div className="space-y-2">
+                    {currentDish.ingredients.map((ingredient, index) => <div key={index} className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-[#FF8B4E] rounded-full" />
+                        <span className="text-sm text-[#8B7355]" style={{
+                  fontFamily: 'Nunito'
+                }}>{ingredient}</span>
+                      </div>)}
+                  </div>
+                </div>}
             </div>
           </div>}
       </div>
