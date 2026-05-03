@@ -31,6 +31,12 @@ export default function FamilyMember(props) {
   const [submitting, setSubmitting] = useState(false);
   const [familyMembers, setFamilyMembers] = useState([]);
   const [membersLoading, setMembersLoading] = useState(true);
+  const [userPermissions, setUserPermissions] = useState(null);
+  const [showPermissionRequest, setShowPermissionRequest] = useState(false);
+  const [permissionRequestForm, setPermissionRequestForm] = useState({
+    targetRole: '',
+    reason: ''
+  });
   const handleAICopywriting = () => {
     navigateTo({
       pageId: 'ai-copywriting',
@@ -134,6 +140,35 @@ export default function FamilyMember(props) {
     return null;
   };
 
+  // 获取用户权限 — 调用 manageFamilyPermissions 云函数
+  const fetchUserPermissions = async () => {
+    try {
+      const group = await fetchFamilyGroup();
+      if (!group) {
+        console.error('未找到活跃的家庭组');
+        return;
+      }
+      const result = await props.$w.cloud.callFunction({
+        name: 'manageFamilyPermissions',
+        data: {
+          action: 'verify',
+          userId: currentUser.userId,
+          familyId: group._id,
+          requiredPermission: 'canManageDishes'
+        }
+      });
+      if (result.result && result.result.success) {
+        setUserPermissions({
+          hasPermission: result.result.hasPermission,
+          role: result.result.role,
+          permissions: result.result.permissions
+        });
+      }
+    } catch (error) {
+      console.error('获取用户权限失败:', error);
+    }
+  };
+
   // 获取家庭成员数据 — 查询 family_memberships 数据模型
   const fetchFamilyMembers = async () => {
     try {
@@ -187,12 +222,70 @@ export default function FamilyMember(props) {
     }
   };
 
+  // 申请权限提升
+  const handlePermissionRequest = async () => {
+    if (!permissionRequestForm.targetRole || !permissionRequestForm.reason) {
+      toast({
+        variant: 'destructive',
+        title: '申请失败',
+        description: '请填写完整信息'
+      });
+      return;
+    }
+    try {
+      const group = await fetchFamilyGroup();
+      if (!group) {
+        toast({
+          variant: 'destructive',
+          title: '申请失败',
+          description: '未找到家庭组信息'
+        });
+        return;
+      }
+      const result = await props.$w.cloud.callFunction({
+        name: 'manageRoleTransitions',
+        data: {
+          action: 'apply',
+          targetUserId: currentUser.userId,
+          familyId: group._id,
+          targetRole: permissionRequestForm.targetRole,
+          reason: permissionRequestForm.reason
+        }
+      });
+      if (result.result && result.result.success) {
+        toast({
+          variant: 'default',
+          title: '申请提交成功',
+          description: result.result.message
+        });
+        setShowPermissionRequest(false);
+        setPermissionRequestForm({
+          targetRole: '',
+          reason: ''
+        });
+        await fetchUserPermissions();
+      } else {
+        toast({
+          variant: 'destructive',
+          title: '申请失败',
+          description: result.result?.message || '请重试'
+        });
+      }
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: '申请失败',
+        description: error.message || '网络错误，请重试'
+      });
+    }
+  };
+
   // 页面初始化加载数据
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
       setMembersLoading(true);
-      await Promise.all([fetchDishes(), fetchFamilyMembers()]);
+      await Promise.all([fetchDishes(), fetchFamilyMembers(), fetchUserPermissions()]);
       setLoading(false);
       setMembersLoading(false);
     };
@@ -215,6 +308,15 @@ export default function FamilyMember(props) {
     name: '奶油黄'
   }];
   const handleDishSelect = dish => {
+    // 检查用户权限
+    if (userPermissions && !userPermissions.hasPermission) {
+      toast({
+        variant: 'destructive',
+        title: '权限不足',
+        description: '您没有点菜权限，请联系管理员申请权限'
+      });
+      return;
+    }
     const isSelected = selectedDishes.some(d => d.id === dish.id);
     if (isSelected) {
       setSelectedDishes(selectedDishes.filter(d => d.id !== dish.id));
@@ -234,6 +336,15 @@ export default function FamilyMember(props) {
   };
   // 提交订单 — 直接创建 orders 数据模型记录
   const handleSubmitOrder = async () => {
+    // 检查用户权限
+    if (userPermissions && !userPermissions.hasPermission) {
+      toast({
+        variant: 'destructive',
+        title: '权限不足',
+        description: '您没有点菜权限，请联系管理员申请权限'
+      });
+      return;
+    }
     if (selectedDishes.length === 0) {
       toast({
         variant: 'destructive',
@@ -316,12 +427,43 @@ export default function FamilyMember(props) {
             }}>温馨家庭 - 点菜</h1>
             </div>
             <div className="flex items-center gap-4">
+              {userPermissions && <div className="flex items-center gap-2 text-sm text-[#8B7355]" style={{
+              fontFamily: 'Nunito'
+            }}>
+                <span>角色: {userPermissions.role}</span>
+                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${userPermissions.hasPermission ? 'bg-[#9CCF4E] text-white' : 'bg-[#E85A42] text-white'}`}>
+                  {userPermissions.hasPermission ? '有权限' : '无权限'}
+                </span>
+              </div>}
               <ShoppingCart className="h-6 w-6 text-[#FF8B4E]" />
               <span className="text-lg font-semibold text-[#FF6B35]" style={{
               fontFamily: 'Quicksand'
             }}>已选: {selectedDishes.length}</span>
             </div>
           </div>
+          
+          {/* 权限提示 */}
+          {userPermissions && !userPermissions.hasPermission && <div className="bg-[#FCEEB8] rounded-xl p-4 mb-4 border-2 border-[#FF8B4E]">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-[#E85A42] rounded-full flex items-center justify-center">
+                    <span className="text-white text-sm font-bold">!</span>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-[#FF6B35]" style={{
+                  fontFamily: 'Quicksand'
+                }}>当前权限不足</p>
+                    <p className="text-xs text-[#8B7355]" style={{
+                  fontFamily: 'Nunito'
+                }}>您需要申请点菜权限才能使用此功能</p>
+                  </div>
+                </div>
+                <Button className="bg-[#FF8B4E] text-white h-8 px-4 rounded-xl text-sm font-bold" onClick={() => setShowPermissionRequest(true)}>
+                  申请权限
+                </Button>
+              </div>
+            </div>}
+          
           <div className="flex items-center gap-3">
             <Search className="h-5 w-5 text-[#FF8B4E]" />
             <Input className="flex-1 bg-[#FCEEB8] border-2 border-[#FF8B4E] rounded-xl h-12" placeholder="搜索菜品名称" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
@@ -425,6 +567,18 @@ export default function FamilyMember(props) {
             <MessageSquare className="h-6 w-6 text-[#FF8B4E] inline mr-2" />
             留言板
           </h2>
+          
+          {/* 权限提示 */}
+          {userPermissions && !userPermissions.hasPermission && <div className="bg-[#FCEEB8] rounded-xl p-4 mb-4 border-2 border-[#FF8B4E]">
+              <div className="text-center">
+                <p className="text-sm font-semibold text-[#FF6B35] mb-2" style={{
+              fontFamily: 'Quicksand'
+            }}>🔒 权限受限</p>
+                <p className="text-xs text-[#8B7355]" style={{
+              fontFamily: 'Nunito'
+            }}>您需要申请点菜权限后才能提交订单</p>
+              </div>
+            </div>}
 
           <div className="mb-4">
             <label className="text-sm font-semibold text-[#8B7355] mb-2 block" style={{
@@ -459,10 +613,10 @@ export default function FamilyMember(props) {
             <Input className="w-full bg-[#FCEEB8] border-2 border-[#FF8B4E] rounded-xl h-32" placeholder="写下您的话..." value={message} onChange={e => setMessage(e.target.value)} />
           </div>
 
-          <Button className="w-full bg-[#FF6B35] text-white h-14 text-lg font-bold rounded-xl shadow-lg hover:bg-[#E85A42]" onClick={handleSubmitOrder} disabled={submitting} style={{
+          <Button className="w-full bg-[#FF6B35] text-white h-14 text-lg font-bold rounded-xl shadow-lg hover:bg-[#E85A42]" onClick={handleSubmitOrder} disabled={submitting || userPermissions && !userPermissions.hasPermission} style={{
           fontFamily: 'Quicksand'
         }}>
-            {submitting ? <><Loader2 className="h-5 w-5 animate-spin inline mr-2" />提交中...</> : '提交订单'}
+            {userPermissions && !userPermissions.hasPermission ? '权限不足' : submitting ? <><Loader2 className="h-5 w-5 animate-spin inline mr-2" />提交中...</> : '提交订单'}
           </Button>
         </div>
 
@@ -546,6 +700,45 @@ export default function FamilyMember(props) {
             </div>
           </div>}
       </div>
+
+        {/* 权限申请弹窗 */}
+        {showPermissionRequest && <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-3xl shadow-xl p-6 max-w-md w-full">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-[#FF6B35]" style={{
+            fontFamily: 'Quicksand'
+          }}>申请权限提升</h2>
+                <Button className="bg-white text-gray-800 border-2 border-gray-300 rounded-xl p-2 hover:bg-gray-100" onClick={() => setShowPermissionRequest(false)}>X</Button>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-semibold text-[#FF6B35] mb-2 block" style={{
+              fontFamily: 'Quicksand'
+            }}>目标角色</label>
+                  <select className="w-full border-2 border-[#FF8B4E] rounded-xl h-10 px-3 text-[#8B7355]" value={permissionRequestForm.targetRole} onChange={e => setPermissionRequestForm({
+              ...permissionRequestForm,
+              targetRole: e.target.value
+            })}>
+                    <option value="">请选择目标角色</option>
+                    <option value="member">成员 (可点菜)</option>
+                    <option value="admin">管理员 (可管理菜品和权限)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-sm font-semibold text-[#FF6B35] mb-2 block" style={{
+              fontFamily: 'Quicksand'
+            }}>申请原因</label>
+                  <textarea className="w-full border-2 border-[#FF8B4E] rounded-xl h-20 px-3 py-2 text-[#8B7355] resize-none" placeholder="请说明申请权限的原因和用途" value={permissionRequestForm.reason} onChange={e => setPermissionRequestForm({
+              ...permissionRequestForm,
+              reason: e.target.value
+            })} />
+                </div>
+                <Button onClick={handlePermissionRequest} className="w-full bg-[#FF8B4E] text-white h-12 font-bold rounded-xl shadow-lg hover:bg-[#FF6B35]" style={{
+            fontFamily: 'Quicksand'
+          }}>提交申请</Button>
+              </div>
+            </div>
+          </div>}
 
       {/* 底部导航栏 */}
       <TabBar activeTab={activeTab} navigateTo={navigateTo} onTabChange={tabId => {

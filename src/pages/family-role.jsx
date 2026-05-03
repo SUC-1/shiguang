@@ -19,6 +19,15 @@ export default function FamilyRole(props) {
   const [chefUsers, setChefUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [registering, setRegistering] = useState(false);
+  const [userPermissions, setUserPermissions] = useState(null);
+  const [pendingTransitions, setPendingTransitions] = useState([]);
+  const [showRoleManagement, setShowRoleManagement] = useState(false);
+  const [showRoleTransition, setShowRoleTransition] = useState(false);
+  const [roleTransitionForm, setRoleTransitionForm] = useState({
+    targetUserId: '',
+    targetRole: '',
+    reason: ''
+  });
 
   // 获取角色用户数据 — 直接查询 users 数据模型
   const fetchRoleUsers = async () => {
@@ -188,11 +197,134 @@ export default function FamilyRole(props) {
     }
   };
 
+  // 查询用户权限
+  const fetchUserPermissions = async () => {
+    try {
+      const result = await props.$w.cloud.callFunction({
+        name: 'manageFamilyPermissions',
+        data: {
+          action: 'query',
+          queryType: 'byUser',
+          userId: currentUser.userId
+        }
+      });
+      if (result.result && result.result.success) {
+        setUserPermissions(result.result.data.permissions[0] || null);
+      }
+    } catch (error) {
+      console.error('获取用户权限失败:', error);
+    }
+  };
+
+  // 查询待审批的角色变更申请
+  const fetchPendingTransitions = async () => {
+    try {
+      const result = await props.$w.cloud.callFunction({
+        name: 'manageRoleTransitions',
+        data: {
+          action: 'query',
+          queryType: 'pending'
+        }
+      });
+      if (result.result && result.result.success) {
+        setPendingTransitions(result.result.data.transitions || []);
+      }
+    } catch (error) {
+      console.error('获取待审批申请失败:', error);
+    }
+  };
+
+  // 申请角色变更
+  const handleRoleTransition = async () => {
+    if (!roleTransitionForm.targetUserId || !roleTransitionForm.targetRole || !roleTransitionForm.reason) {
+      toast({
+        variant: 'destructive',
+        title: '申请失败',
+        description: '请填写完整信息'
+      });
+      return;
+    }
+    try {
+      const result = await props.$w.cloud.callFunction({
+        name: 'manageRoleTransitions',
+        data: {
+          action: 'apply',
+          targetUserId: roleTransitionForm.targetUserId,
+          familyId: userPermissions?.familyId,
+          targetRole: roleTransitionForm.targetRole,
+          reason: roleTransitionForm.reason
+        }
+      });
+      if (result.result && result.result.success) {
+        toast({
+          variant: 'default',
+          title: '申请提交成功',
+          description: result.result.message
+        });
+        setShowRoleTransition(false);
+        setRoleTransitionForm({
+          targetUserId: '',
+          targetRole: '',
+          reason: ''
+        });
+        await fetchPendingTransitions();
+      } else {
+        toast({
+          variant: 'destructive',
+          title: '申请失败',
+          description: result.result?.message || '请重试'
+        });
+      }
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: '申请失败',
+        description: error.message || '网络错误，请重试'
+      });
+    }
+  };
+
+  // 审批角色变更申请
+  const handleApproveTransition = async (transitionId, approve) => {
+    try {
+      const action = approve ? 'approve' : 'reject';
+      const result = await props.$w.cloud.callFunction({
+        name: 'manageRoleTransitions',
+        data: {
+          action: action,
+          transitionId: transitionId,
+          approvalComment: approve ? '同意申请' : '拒绝申请'
+        }
+      });
+      if (result.result && result.result.success) {
+        toast({
+          variant: 'default',
+          title: approve ? '审批通过' : '审批拒绝',
+          description: result.result.message
+        });
+        await fetchPendingTransitions();
+        await fetchRoleUsers();
+      } else {
+        toast({
+          variant: 'destructive',
+          title: '审批失败',
+          description: result.result?.message || '请重试'
+        });
+      }
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: '审批失败',
+        description: error.message || '网络错误，请重试'
+      });
+    }
+  };
+
   // 页面初始化
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
-      await fetchRoleUsers();
+      await Promise.all([fetchRoleUsers(), fetchUserPermissions(), fetchPendingTransitions()]);
       setLoading(false);
     };
     loadData();
@@ -344,6 +476,24 @@ export default function FamilyRole(props) {
             </div>
           </div>}
 
+        {/* 角色管理按钮（管理员可见） */}
+        {userPermissions && (userPermissions.role === 'admin' || userPermissions.role === 'owner') && <div className="mt-6 text-center">
+            <Button onClick={() => setShowRoleManagement(true)} className="bg-[#9CCF4E] text-white h-12 px-6 font-bold rounded-xl hover:bg-[#FF6B35] shadow-lg" style={{
+          fontFamily: 'Quicksand'
+        }}>
+              角色管理
+            </Button>
+          </div>}
+
+        {/* 角色变更申请按钮 */}
+        {userPermissions && userPermissions.permissions?.canInviteMembers && <div className="mt-4 text-center">
+            <Button onClick={() => setShowRoleTransition(true)} className="bg-[#FF8B4E] text-white h-12 px-6 font-bold rounded-xl hover:bg-[#FF6B35] shadow-lg" style={{
+          fontFamily: 'Quicksand'
+        }}>
+              申请角色变更
+            </Button>
+          </div>}
+
         <div className="mt-8 text-center">
           <Button onClick={() => window.history.back()} className="bg-white text-[#FF6B35] border-2 border-[#FF6B35] h-12 px-8 font-bold rounded-xl hover:bg-[#FF6B35] hover:text-white transition-colors" style={{
           fontFamily: 'Quicksand'
@@ -351,6 +501,92 @@ export default function FamilyRole(props) {
             返回
           </Button>
         </div>
+
+        {/* 角色管理弹窗 */}
+        {showRoleManagement && <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-3xl shadow-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-[#FF6B35]" style={{
+              fontFamily: 'Quicksand'
+            }}>角色管理</h2>
+                <Button className="bg-white text-gray-800 border-2 border-gray-300 rounded-xl p-2 hover:bg-gray-100" onClick={() => setShowRoleManagement(false)}>X</Button>
+              </div>
+              {pendingTransitions.length > 0 ? <div>
+                  <h3 className="text-lg font-semibold text-[#FF6B35] mb-4" style={{
+              fontFamily: 'Quicksand'
+            }}>待审批申请</h3>
+                  <div className="space-y-3">
+                    {pendingTransitions.map(transition => <div key={transition._id} className="bg-[#FCEEB8] rounded-xl p-4 border border-[#FF8B4E]">
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <p className="font-semibold text-[#FF6B35]" style={{
+                      fontFamily: 'Quicksand'
+                    }}>{transition.targetRole} 申请</p>
+                            <p className="text-sm text-[#8B7355]" style={{
+                      fontFamily: 'Nunito'
+                    }}>原因: {transition.reason}</p>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button onClick={() => handleApproveTransition(transition._id, true)} className="bg-[#9CCF4E] text-white h-8 px-3 rounded-lg text-sm">同意</Button>
+                            <Button onClick={() => handleApproveTransition(transition._id, false)} className="bg-[#E85A42] text-white h-8 px-3 rounded-lg text-sm">拒绝</Button>
+                          </div>
+                        </div>
+                      </div>)}
+                  </div>
+                </div> : <p className="text-center text-[#8B7355] py-4" style={{
+            fontFamily: 'Nunito'
+          }}>暂无待审批申请</p>}
+            </div>
+          </div>}
+
+        {/* 角色变更申请弹窗 */}
+        {showRoleTransition && <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-3xl shadow-xl p-6 max-w-md w-full">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-[#FF6B35]" style={{
+              fontFamily: 'Quicksand'
+            }}>申请角色变更</h2>
+                <Button className="bg-white text-gray-800 border-2 border-gray-300 rounded-xl p-2 hover:bg-gray-100" onClick={() => setShowRoleTransition(false)}>X</Button>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-semibold text-[#FF6B35] mb-2 block" style={{
+                fontFamily: 'Quicksand'
+              }}>目标用户ID</label>
+                  <input type="text" className="w-full border-2 border-[#FF8B4E] rounded-xl h-10 px-3 text-[#8B7355]" placeholder="请输入用户ID" value={roleTransitionForm.targetUserId} onChange={e => setRoleTransitionForm({
+                ...roleTransitionForm,
+                targetUserId: e.target.value
+              })} />
+                </div>
+                <div>
+                  <label className="text-sm font-semibold text-[#FF6B35] mb-2 block" style={{
+                fontFamily: 'Quicksand'
+              }}>目标角色</label>
+                  <select className="w-full border-2 border-[#FF8B4E] rounded-xl h-10 px-3 text-[#8B7355]" value={roleTransitionForm.targetRole} onChange={e => setRoleTransitionForm({
+                ...roleTransitionForm,
+                targetRole: e.target.value
+              })}>
+                    <option value="">请选择角色</option>
+                    <option value="member">成员</option>
+                    <option value="admin">管理员</option>
+                    <option value="owner">所有者</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-sm font-semibold text-[#FF6B35] mb-2 block" style={{
+                fontFamily: 'Quicksand'
+              }}>变更原因</label>
+                  <textarea className="w-full border-2 border-[#FF8B4E] rounded-xl h-20 px-3 py-2 text-[#8B7355] resize-none" placeholder="请输入变更原因" value={roleTransitionForm.reason} onChange={e => setRoleTransitionForm({
+                ...roleTransitionForm,
+                reason: e.target.value
+              })} />
+                </div>
+                <Button onClick={handleRoleTransition} className="w-full bg-[#FF8B4E] text-white h-12 font-bold rounded-xl shadow-lg hover:bg-[#FF6B35]" style={{
+              fontFamily: 'Quicksand'
+            }}>提交申请</Button>
+              </div>
+            </div>
+          </div>}
       </div>
     </div>;
 }

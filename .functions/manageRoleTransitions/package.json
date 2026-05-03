@@ -1,0 +1,9 @@
+{
+  "name": "manage-role-transitions",
+  "version": "1.0.0",
+  "description": "家庭成员角色流转管理云函数",
+  "main": "index.js",
+  "dependencies": {
+    "@cloudbase/node-sdk": "^3.3.7"
+  }
+}

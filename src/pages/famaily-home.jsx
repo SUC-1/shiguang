@@ -27,6 +27,8 @@ export default function FamilyHome(props) {
   const [loading, setLoading] = useState(true);
   const [familyGroup, setFamilyGroup] = useState(null);
   const [familyMembers, setFamilyMembers] = useState([]);
+  const [userPermissions, setUserPermissions] = useState(null);
+  const [pendingTransitions, setPendingTransitions] = useState([]);
 
   // 获取家庭订单数据 — 直接查询 orders 数据模型
   const fetchOrders = async () => {
@@ -173,6 +175,58 @@ export default function FamilyHome(props) {
     return null;
   };
 
+  // 获取用户权限 — 调用 manageFamilyPermissions 云函数
+  const fetchUserPermissions = async () => {
+    try {
+      const group = await fetchFamilyGroup();
+      if (!group) {
+        console.error('未找到活跃的家庭组');
+        return;
+      }
+      const result = await props.$w.cloud.callFunction({
+        name: 'manageFamilyPermissions',
+        data: {
+          action: 'verify',
+          userId: currentUser.userId,
+          familyId: group._id,
+          requiredPermission: 'canViewReports'
+        }
+      });
+      if (result.result && result.result.success) {
+        setUserPermissions({
+          hasPermission: result.result.hasPermission,
+          role: result.result.role,
+          permissions: result.result.permissions
+        });
+      }
+    } catch (error) {
+      console.error('获取用户权限失败:', error);
+    }
+  };
+
+  // 获取待审批的角色变更申请 — 调用 manageRoleTransitions 云函数
+  const fetchPendingTransitions = async () => {
+    try {
+      const group = await fetchFamilyGroup();
+      if (!group) {
+        console.error('未找到活跃的家庭组');
+        return;
+      }
+      const result = await props.$w.cloud.callFunction({
+        name: 'manageRoleTransitions',
+        data: {
+          action: 'query',
+          queryType: 'pending'
+        }
+      });
+      if (result.result && result.result.success) {
+        setPendingTransitions(result.result.data.transitions || []);
+      }
+    } catch (error) {
+      console.error('获取待审批申请失败:', error);
+    }
+  };
+
   // 获取家庭成员列表 — 查询 family_memberships 数据模型
   const fetchFamilyMembers = async groupId => {
     try {
@@ -226,6 +280,8 @@ export default function FamilyHome(props) {
       const promises = [fetchOrders(), fetchMessages()];
       if (group) {
         promises.push(fetchFamilyMembers(group._id));
+        promises.push(fetchUserPermissions());
+        promises.push(fetchPendingTransitions());
       }
       await Promise.all(promises);
       setLoading(false);
@@ -273,11 +329,26 @@ export default function FamilyHome(props) {
               setLoading(true);
               const group = familyGroup;
               const promises = [fetchOrders(), fetchMessages()];
-              if (group) promises.push(fetchFamilyMembers(group.id));
+              if (group) {
+                promises.push(fetchFamilyMembers(group.id));
+                promises.push(fetchUserPermissions());
+                promises.push(fetchPendingTransitions());
+              }
               Promise.all(promises).finally(() => setLoading(false));
             }}>
                 <RefreshCw className="h-5 w-5" />
               </Button>
+              
+              {/* 权限管理按钮（管理员可见） */}
+              {userPermissions && (userPermissions.role === 'admin' || userPermissions.role === 'owner') && <Button className="bg-[#9CCF4E] text-white h-12 px-4 font-bold rounded-xl hover:bg-[#FF6B35] shadow-lg" onClick={() => navigateTo({
+              pageId: 'family-role',
+              params: {}
+            })} style={{
+              fontFamily: 'Quicksand'
+            }}>
+                  权限管理
+                </Button>}
+              
               <Button className="bg-white text-[#FF6B35] border-2 border-[#FF6B35] h-12 px-4 font-bold rounded-xl hover:bg-[#FF6B35] hover:text-white" onClick={() => navigateTo({
               pageId: 'famaily-role',
               params: {}
@@ -292,6 +363,17 @@ export default function FamilyHome(props) {
               <span>成员上限: {familyGroup.maxMembers || '不限'}</span>
               <span>邀请码: <span className="font-bold text-[#FF6B35]">{familyGroup.inviteCode || '无'}</span></span>
               <span>当前成员: {familyMembers.length}</span>
+              
+              {/* 权限状态显示 */}
+              {userPermissions && <span>
+                角色: <span className={`font-bold ${userPermissions.role === 'owner' ? 'text-[#FF6B35]' : userPermissions.role === 'admin' ? 'text-[#9CCF4E]' : 'text-[#FF8B4E]'}`}>{userPermissions.role === 'owner' ? '所有者' : userPermissions.role === 'admin' ? '管理员' : '成员'}</span>
+              </span>}
+              
+              {/* 待审批申请数量（管理员可见） */}
+              {userPermissions && (userPermissions.role === 'admin' || userPermissions.role === 'owner') && pendingTransitions.length > 0 && <span className="flex items-center gap-1">
+                <span className="w-2 h-2 bg-[#E85A42] rounded-full animate-pulse"></span>
+                待审批: <span className="font-bold text-[#E85A42]">{pendingTransitions.length}</span>
+              </span>}
             </div>}
         </div>
 
@@ -353,12 +435,20 @@ export default function FamilyHome(props) {
 
         {/* 快捷操作 */}
         <div className="bg-white rounded-3xl shadow-xl p-6 mb-6">
-          <h2 className="text-xl font-bold text-[#FF6B35] mb-4" style={{
-          fontFamily: 'Quicksand'
-        }}>
-            快捷操作
-          </h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-[#FF6B35]" style={{
+            fontFamily: 'Quicksand'
+          }}>
+              快捷操作
+            </h2>
+            {userPermissions && (userPermissions.role === 'admin' || userPermissions.role === 'owner') && pendingTransitions.length > 0 && <Button className="bg-[#E85A42] text-white h-8 px-3 rounded-lg text-sm font-bold hover:bg-[#FF6B35]" onClick={() => navigateTo({
+            pageId: 'family-role',
+            params: {}
+          })}>
+              处理申请 ({pendingTransitions.length})
+            </Button>}
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             <Button onClick={() => navigateTo({
             pageId: 'family-member',
             params: {}
@@ -377,6 +467,17 @@ export default function FamilyHome(props) {
               fontFamily: 'Quicksand'
             }}>查看订单</span>
             </Button>
+            
+            {/* 权限申请按钮（非管理员可见） */}
+            {userPermissions && userPermissions.role !== 'admin' && userPermissions.role !== 'owner' && <Button onClick={() => navigateTo({
+            pageId: 'family-member',
+            params: {}
+          })} className="bg-gradient-to-br from-[#E85A42] to-[#FF6B35] text-white h-20 flex flex-col items-center justify-center gap-2 rounded-2xl shadow-lg hover:shadow-xl transition-shadow">
+                <Users className="h-8 w-8" />
+                <span className="font-bold" style={{
+              fontFamily: 'Quicksand'
+            }}>申请权限</span>
+              </Button>}
           </div>
         </div>
 
@@ -388,23 +489,41 @@ export default function FamilyHome(props) {
           }}>
                 <Users className="h-6 w-6 inline mr-2" />家庭成员
               </h2>
-              <span className="text-sm text-[#8B7355]" style={{
-            fontFamily: 'Nunito'
-          }}>{familyMembers.length} 位成员</span>
+              <div className="flex items-center gap-4">
+                <span className="text-sm text-[#8B7355]" style={{
+              fontFamily: 'Nunito'
+            }}>{familyMembers.length} 位成员</span>
+                
+                {/* 角色统计 */}
+                {userPermissions && (userPermissions.role === 'admin' || userPermissions.role === 'owner') && <div className="flex items-center gap-3 text-xs text-[#8B7355]">
+                    <span>管理员: {familyMembers.filter(m => m.role === 'admin').length}</span>
+                    <span>成员: {familyMembers.filter(m => m.role === 'member').length}</span>
+                  </div>}
+              </div>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {familyMembers.map(member => <div key={member.id} className="flex items-center gap-2 bg-[#FCEEB8] rounded-xl px-3 py-2 shadow-sm">
                   <div className="w-8 h-8 bg-[#FF8B4E] rounded-full flex items-center justify-center text-white text-sm font-bold" style={{
               fontFamily: 'Quicksand'
             }}>{member.nickname ? member.nickname.charAt(0) : '?'}</div>
-                  <div>
+                  <div className="flex-1">
                     <p className="text-sm font-semibold text-[#FF6B35]" style={{
                 fontFamily: 'Quicksand'
               }}>{member.nickname || '未命名'}</p>
-                    <p className={`text-xs font-semibold ${member.role === 'chef' ? 'text-[#FF8B4E]' : 'text-[#9CCF4E]'}`} style={{
+                    <p className={`text-xs font-semibold ${member.role === 'owner' ? 'text-[#FF6B35]' : member.role === 'admin' ? 'text-[#9CCF4E]' : 'text-[#FF8B4E]'}`} style={{
                 fontFamily: 'Nunito'
-              }}>{member.role === 'chef' ? '大厨' : '成员'}</p>
+              }}>
+                      {member.role === 'owner' ? '所有者' : member.role === 'admin' ? '管理员' : '成员'}
+                    </p>
                   </div>
+                  
+                  {/* 权限管理入口（管理员可见） */}
+                  {userPermissions && (userPermissions.role === 'admin' || userPermissions.role === 'owner') && member.role !== 'owner' && <Button className="bg-white text-[#8B7355] h-6 px-2 rounded-lg text-xs hover:bg-[#FF8B4E] hover:text-white" onClick={() => navigateTo({
+              pageId: 'family-role',
+              params: {}
+            })}>
+                      管理
+                    </Button>}
                 </div>)}
             </div>
           </div>}
