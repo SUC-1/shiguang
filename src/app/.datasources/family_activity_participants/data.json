@@ -1,0 +1,110 @@
+[
+  {
+    "_id": "fap001",
+    "activityId": "fa001",
+    "userId": "u003",
+    "nickname": "小明",
+    "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=xiaoming",
+    "status": "registered",
+    "registeredAt": 1746013200000,
+    "notes": "带一位朋友参加",
+    "createdAt": 1746013200000,
+    "updatedAt": 1746013200000
+  },
+  {
+    "_id": "fap002",
+    "activityId": "fa001",
+    "userId": "u004",
+    "nickname": "小红",
+    "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=xiaohong",
+    "status": "registered",
+    "registeredAt": 1746016800000,
+    "notes": "",
+    "createdAt": 1746016800000,
+    "updatedAt": 1746016800000
+  },
+  {
+    "_id": "fap003",
+    "activityId": "fa001",
+    "userId": "u001",
+    "nickname": "爸爸",
+    "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=dad",
+    "status": "registered",
+    "registeredAt": 1746020400000,
+    "notes": "",
+    "createdAt": 1746020400000,
+    "updatedAt": 1746020400000
+  },
+  {
+    "_id": "fap004",
+    "activityId": "fa002",
+    "userId": "u003",
+    "nickname": "小明",
+    "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=xiaoming",
+    "status": "attended",
+    "registeredAt": 1745937600000,
+    "notes": "",
+    "createdAt": 1745937600000,
+    "updatedAt": 1746262800000
+  },
+  {
+    "_id": "fap005",
+    "activityId": "fa002",
+    "userId": "u004",
+    "nickname": "小红",
+    "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=xiaohong",
+    "status": "attended",
+    "registeredAt": 1745941200000,
+    "notes": "",
+    "createdAt": 1745941200000,
+    "updatedAt": 1746266400000
+  },
+  {
+    "_id": "fap006",
+    "activityId": "fa002",
+    "userId": "u002",
+    "nickname": "妈妈",
+    "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=mom",
+    "status": "attended",
+    "registeredAt": 1745944800000,
+    "notes": "",
+    "createdAt": 1745944800000,
+    "updatedAt": 1746270000000
+  },
+  {
+    "_id": "fap007",
+    "activityId": "fa002",
+    "userId": "u005",
+    "nickname": "小宝",
+    "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=xiaobao",
+    "status": "attended",
+    "registeredAt": 1745948400000,
+    "notes": "",
+    "createdAt": 1745948400000,
+    "updatedAt": 1746273600000
+  },
+  {
+    "_id": "fap008",
+    "activityId": "fa003",
+    "userId": "u003",
+    "nickname": "小明",
+    "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=xiaoming",
+    "status": "attended",
+    "registeredAt": 1745600400000,
+    "notes": "",
+    "createdAt": 1745600400000,
+    "updatedAt": 1745686800000
+  },
+  {
+    "_id": "fap009",
+    "activityId": "fa003",
+    "userId": "u004",
+    "nickname": "小红",
+    "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=xiaohong",
+    "status": "attended",
+    "registeredAt": 1745604000000,
+    "notes": "",
+    "createdAt": 1745604000000,
+    "updatedAt": 1745690400000
+  }
+]

@@ -1,0 +1,9 @@
+{
+  "name": "manageactivityparticipants",
+  "version": "1.0.0",
+  "description": "管理活动报名、取消报名、参与人员查询",
+  "main": "index.js",
+  "scripts": {},
+  "dependencies": {},
+  "devDependencies": {}
+}

@@ -1,0 +1,9 @@
+{
+  "name": "manageactivityphotos",
+  "version": "1.0.0",
+  "description": "管理活动相册、照片上传、照片删除",
+  "main": "index.js",
+  "scripts": {},
+  "dependencies": {},
+  "devDependencies": {}
+}

@@ -1,0 +1,42 @@
+{
+  "name": "family_activity_photos",
+  "title": "活动照片",
+  "schemas": [
+    {
+      "name": "activityId",
+      "title": "活动ID",
+      "type": "String"
+    },
+    {
+      "name": "url",
+      "title": "照片URL",
+      "type": "Image"
+    },
+    {
+      "name": "thumbnailUrl",
+      "title": "缩略图URL",
+      "type": "Image"
+    },
+    {
+      "name": "description",
+      "title": "照片描述",
+      "type": "MultiLineString"
+    },
+    {
+      "name": "uploadedBy",
+      "title": "上传人ID",
+      "type": "String"
+    },
+    {
+      "name": "uploaderNickname",
+      "title": "上传人昵称",
+      "type": "String"
+    },
+    {
+      "name": "uploadedAt",
+      "title": "上传时间",
+      "type": "DateTime",
+      "format": "timestamp-ms"
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "name": "family_activities",
+  "title": "家庭活动",
+  "schemas": [
+    {
+      "name": "name",
+      "title": "活动名称",
+      "type": "String"
+    },
+    {
+      "name": "description",
+      "title": "活动描述",
+      "type": "MultiLineString"
+    },
+    {
+      "name": "coverImage",
+      "title": "封面图片",
+      "type": "Image"
+    },
+    {
+      "name": "startTime",
+      "title": "开始时间",
+      "type": "DateTime",
+      "format": "timestamp-ms"
+    },
+    {
+      "name": "endTime",
+      "title": "结束时间",
+      "type": "DateTime",
+      "format": "timestamp-ms"
+    },
+    {
+      "name": "location",
+      "title": "活动地点",
+      "type": "String"
+    },
+    {
+      "name": "maxParticipants",
+      "title": "最大参与人数",
+      "type": "Number"
+    },
+    {
+      "name": "status",
+      "title": "活动状态",
+      "type": "String"
+    },
+    {
+      "name": "familyGroupId",
+      "title": "家庭组ID",
+      "type": "String"
+    },
+    {
+      "name": "createdBy",
+      "title": "创建人ID",
+      "type": "String"
+    }
+  ]
+}

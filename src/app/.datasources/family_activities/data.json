@@ -1,0 +1,62 @@
+[
+  {
+    "_id": "fa001",
+    "name": "周末家庭聚餐",
+    "description": "每周一次的家庭聚餐，大家一起动手做饭，享受温馨时光。",
+    "coverImage": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800",
+    "startTime": 1746873600000,
+    "endTime": 1746884400000,
+    "location": "家中客厅",
+    "maxParticipants": 6,
+    "status": "planning",
+    "familyGroupId": "fg001",
+    "createdBy": "u001",
+    "createdAt": 1746009600000,
+    "updatedAt": 1746009600000
+  },
+  {
+    "_id": "fa002",
+    "name": "亲子运动会",
+    "description": "户外亲子运动，包括接力赛、拔河比赛、跳绳等项目。",
+    "coverImage": "https://images.unsplash.com/photo-1461896836934- voices?w=800",
+    "startTime": 1746259200000,
+    "endTime": 1746270000000,
+    "location": "市中心公园草坪",
+    "maxParticipants": 8,
+    "status": "ongoing",
+    "familyGroupId": "fg001",
+    "createdBy": "u001",
+    "createdAt": 1745923200000,
+    "updatedAt": 1746259200000
+  },
+  {
+    "_id": "fa003",
+    "name": "家庭电影之夜",
+    "description": "一起观看经典动画电影，准备爆米花和零食。",
+    "coverImage": "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800",
+    "startTime": 1745683200000,
+    "endTime": 1745690400000,
+    "location": "家中客厅",
+    "maxParticipants": 5,
+    "status": "completed",
+    "familyGroupId": "fg001",
+    "createdBy": "u002",
+    "createdAt": 1745596800000,
+    "updatedAt": 1745690400000
+  },
+  {
+    "_id": "fa004",
+    "name": "户外野餐",
+    "description": "春日户外野餐，准备三明治、水果和饮料。",
+    "coverImage": "https://images.unsplash.com/photo-1478131143081-80f7f84ca84d?w=800",
+    "startTime": 1747478400000,
+    "endTime": 1747492800000,
+    "location": "郊外公园",
+    "maxParticipants": 6,
+    "status": "planning",
+    "familyGroupId": "fg001",
+    "createdBy": "u001",
+    "createdAt": 1746009600000,
+    "updatedAt": 1746009600000
+  }
+]

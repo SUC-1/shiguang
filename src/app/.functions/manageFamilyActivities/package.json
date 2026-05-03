@@ -1,0 +1,9 @@
+{
+  "name": "managefamilyactivities",
+  "version": "1.0.0",
+  "description": "管理家庭活动CRUD、活动状态变更、活动列表查询",
+  "main": "index.js",
+  "scripts": {},
+  "dependencies": {},
+  "devDependencies": {}
+}

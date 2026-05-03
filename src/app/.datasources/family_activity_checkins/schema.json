@@ -1,0 +1,47 @@
+{
+  "name": "family_activity_checkins",
+  "title": "活动签到",
+  "schemas": [
+    {
+      "name": "activityId",
+      "title": "活动ID",
+      "type": "String"
+    },
+    {
+      "name": "userId",
+      "title": "用户ID",
+      "type": "String"
+    },
+    {
+      "name": "nickname",
+      "title": "用户昵称",
+      "type": "String"
+    },
+    {
+      "name": "avatar",
+      "title": "用户头像",
+      "type": "Image"
+    },
+    {
+      "name": "checkinTime",
+      "title": "签到时间",
+      "type": "DateTime",
+      "format": "timestamp-ms"
+    },
+    {
+      "name": "checkinLocation",
+      "title": "签到地点",
+      "type": "String"
+    },
+    {
+      "name": "checkinPhoto",
+      "title": "签到照片",
+      "type": "Image"
+    },
+    {
+      "name": "notes",
+      "title": "备注",
+      "type": "MultiLineString"
+    }
+  ]
+}

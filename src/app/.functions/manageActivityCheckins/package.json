@@ -1,0 +1,9 @@
+{
+  "name": "manageactivitycheckins",
+  "version": "1.0.0",
+  "description": "管理活动签到、签到统计",
+  "main": "index.js",
+  "scripts": {},
+  "dependencies": {},
+  "devDependencies": {}
+}

@@ -1,0 +1,80 @@
+[
+  {
+    "_id": "fac001",
+    "activityId": "fa002",
+    "userId": "u003",
+    "nickname": "小明",
+    "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=xiaoming",
+    "checkinTime": 1746259500000,
+    "checkinLocation": "市中心公园草坪",
+    "checkinPhoto": "",
+    "notes": "",
+    "createdAt": 1746259500000,
+    "updatedAt": 1746259500000
+  },
+  {
+    "_id": "fac002",
+    "activityId": "fa002",
+    "userId": "u004",
+    "nickname": "小红",
+    "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=xiaohong",
+    "checkinTime": 1746259680000,
+    "checkinLocation": "市中心公园草坪",
+    "checkinPhoto": "",
+    "notes": "",
+    "createdAt": 1746259680000,
+    "updatedAt": 1746259680000
+  },
+  {
+    "_id": "fac003",
+    "activityId": "fa002",
+    "userId": "u002",
+    "nickname": "妈妈",
+    "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=mom",
+    "checkinTime": 1746259800000,
+    "checkinLocation": "市中心公园草坪",
+    "checkinPhoto": "",
+    "notes": "",
+    "createdAt": 1746259800000,
+    "updatedAt": 1746259800000
+  },
+  {
+    "_id": "fac004",
+    "activityId": "fa002",
+    "userId": "u005",
+    "nickname": "小宝",
+    "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=xiaobao",
+    "checkinTime": 1746259920000,
+    "checkinLocation": "市中心公园草坪",
+    "checkinPhoto": "",
+    "notes": "",
+    "createdAt": 1746259920000,
+    "updatedAt": 1746259920000
+  },
+  {
+    "_id": "fac005",
+    "activityId": "fa003",
+    "userId": "u003",
+    "nickname": "小明",
+    "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=xiaoming",
+    "checkinTime": 1745683200000,
+    "checkinLocation": "家中客厅",
+    "checkinPhoto": "",
+    "notes": "",
+    "createdAt": 1745683200000,
+    "updatedAt": 1745683200000
+  },
+  {
+    "_id": "fac006",
+    "activityId": "fa003",
+    "userId": "u004",
+    "nickname": "小红",
+    "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=xiaohong",
+    "checkinTime": 1745683320000,
+    "checkinLocation": "家中客厅",
+    "checkinPhoto": "",
+    "notes": "",
+    "createdAt": 1745683320000,
+    "updatedAt": 1745683320000
+  }
+]
