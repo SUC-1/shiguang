@@ -23,6 +23,17 @@ export default function FamilyChef(props) {
   const [dishesData, setDishesData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updatingStatus, setUpdatingStatus] = useState({});
+  const [showCreateOrder, setShowCreateOrder] = useState(false);
+  const [newOrderForm, setNewOrderForm] = useState({
+    userName: '',
+    dishes: [{
+      name: '',
+      quantity: 1,
+      price: 0
+    }],
+    message: '',
+    boardColor: '#FF8B4E'
+  });
 
   // 获取订单数据 — 直接查询 orders 数据模型
   const fetchOrders = async () => {
@@ -139,6 +150,120 @@ export default function FamilyChef(props) {
     };
     loadData();
   }, []);
+  // 创建新订单 — 使用 wedaCreateV2
+  const handleCreateOrder = async () => {
+    if (!newOrderForm.userName) {
+      toast({
+        variant: 'destructive',
+        title: '创建失败',
+        description: '请填写用户名'
+      });
+      return;
+    }
+    const hasDish = newOrderForm.dishes.some(d => d.name);
+    if (!hasDish) {
+      toast({
+        variant: 'destructive',
+        title: '创建失败',
+        description: '请至少添加一个菜品'
+      });
+      return;
+    }
+    try {
+      const total = newOrderForm.dishes.reduce((sum, d) => sum + (d.price || 0) * (d.quantity || 1), 0);
+      const result = await props.$w.cloud.callDataSource({
+        dataSourceName: 'orders',
+        methodName: 'wedaCreateV2',
+        params: {
+          data: {
+            userName: newOrderForm.userName,
+            dishes: newOrderForm.dishes.filter(d => d.name).map(d => ({
+              name: d.name,
+              quantity: d.quantity || 1,
+              price: d.price || 0
+            })),
+            message: newOrderForm.message || '',
+            boardColor: newOrderForm.boardColor || '#FF8B4E',
+            status: 'pending',
+            total: total,
+            businessType: 'family'
+          }
+        }
+      });
+      if (result && result.id) {
+        toast({
+          variant: 'default',
+          title: '创建成功',
+          description: '订单已创建，等待烹饪'
+        });
+        setShowCreateOrder(false);
+        setNewOrderForm({
+          userName: '',
+          dishes: [{
+            name: '',
+            quantity: 1,
+            price: 0
+          }],
+          message: '',
+          boardColor: '#FF8B4E'
+        });
+        await fetchOrders();
+      } else {
+        toast({
+          variant: 'destructive',
+          title: '创建失败',
+          description: '请稍后重试'
+        });
+      }
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: '创建失败',
+        description: error.message || '网络错误，请稍后重试'
+      });
+    }
+  };
+
+  // 删除订单 — 使用 wedaDeleteV2
+  const handleDeleteOrder = async orderId => {
+    try {
+      const result = await props.$w.cloud.callDataSource({
+        dataSourceName: 'orders',
+        methodName: 'wedaDeleteV2',
+        params: {
+          filter: {
+            where: {
+              $and: [{
+                _id: {
+                  $eq: orderId
+                }
+              }]
+            }
+          }
+        }
+      });
+      if (result && result.count !== 0) {
+        toast({
+          variant: 'default',
+          title: '删除成功',
+          description: '订单已删除'
+        });
+        await fetchOrders();
+      } else {
+        toast({
+          variant: 'destructive',
+          title: '删除失败',
+          description: '请稍后重试'
+        });
+      }
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: '删除失败',
+        description: error.message || '网络错误，请稍后重试'
+      });
+    }
+  };
   const formatTime = date => {
     const now = new Date();
     const diff = Math.floor((now - date) / 1000);
@@ -327,6 +452,9 @@ export default function FamilyChef(props) {
               <Users className="h-4 w-4" />
               <span>{currentUser.nickName || currentUser.name || '大厨'}</span>
             </div>
+            <Button className="bg-[#FF8B4E] text-white h-10 px-4 font-bold rounded-xl shadow-lg hover:bg-[#FF6B35]" onClick={() => setShowCreateOrder(true)} style={{
+            fontFamily: 'Quicksand'
+          }}>新建订单</Button>
           </div>
 
           {/* Tab切换 */}
@@ -431,11 +559,14 @@ export default function FamilyChef(props) {
                         <span className="font-semibold">已完成</span>
                       </div>}
                   </div>
-                  <Button className="bg-white text-[#FF6B35] border-2 border-[#FF6B35] h-10 px-4 font-bold rounded-xl hover:bg-[#FF6B35] hover:text-white" onClick={() => setSelectedOrder(order)} style={{
-              fontFamily: 'Quicksand'
-            }}>
-                    查看详情
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button className="bg-white text-[#FF6B35] border-2 border-[#FF6B35] h-10 px-4 font-bold rounded-xl hover:bg-[#FF6B35] hover:text-white" onClick={() => setSelectedOrder(order)} style={{
+                fontFamily: 'Quicksand'
+              }}>查看详情</Button>
+                    {(order.status === 'completed' || order.status === 'cancelled') && <Button className="bg-white text-[#E85A42] border-2 border-[#E85A42] h-10 px-4 font-bold rounded-xl hover:bg-[#E85A42] hover:text-white" onClick={() => handleDeleteOrder(order.id)} style={{
+                fontFamily: 'Quicksand'
+              }}>删除</Button>}
+                  </div>
                 </div>
               </div>)}
           </div>}
@@ -520,6 +651,139 @@ export default function FamilyChef(props) {
               </div>)}
           </div>}
       </div>
+
+      {/* 新建订单弹窗 */}
+      {showCreateOrder && <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl shadow-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-[#FF6B35]" style={{
+            fontFamily: 'Quicksand'
+          }}>新建家庭订单</h2>
+              <Button className="bg-white text-gray-800 border-2 border-gray-300 rounded-xl p-2 hover:bg-gray-100" onClick={() => setShowCreateOrder(false)}>X</Button>
+            </div>
+
+            <div className="space-y-6">
+              {/* 用户名 */}
+              <div className="bg-[#FCEEB8] rounded-xl p-4">
+                <label className="text-lg font-semibold text-[#FF6B35] mb-2 block" style={{
+              fontFamily: 'Quicksand'
+            }}>用户名</label>
+                <input type="text" className="w-full bg-white border-2 border-[#FF8B4E] rounded-xl h-12 px-4 text-[#8B7355]" placeholder="请输入用户名" value={newOrderForm.userName} onChange={e => setNewOrderForm({
+              ...newOrderForm,
+              userName: e.target.value
+            })} />
+              </div>
+
+              {/* 菜品列表 */}
+              <div className="bg-[#FCEEB8] rounded-xl p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <label className="text-lg font-semibold text-[#FF6B35]" style={{
+                fontFamily: 'Quicksand'
+              }}>菜品列表</label>
+                  <Button className="bg-[#FF8B4E] text-white h-8 px-3 rounded-xl text-sm font-bold" onClick={() => setNewOrderForm({
+                ...newOrderForm,
+                dishes: [...newOrderForm.dishes, {
+                  name: '',
+                  quantity: 1,
+                  price: 0
+                }]
+              })}>+ 添加菜品</Button>
+                </div>
+                <div className="space-y-3">
+                  {newOrderForm.dishes.map((dish, index) => <div key={index} className="bg-white rounded-xl p-3 border border-[#FF8B4E]">
+                      <div className="flex items-center gap-3 mb-2">
+                        <input type="text" className="flex-1 border-2 border-[#FF8B4E] rounded-lg h-10 px-3 text-[#8B7355]" placeholder="菜品名称" value={dish.name} onChange={e => {
+                    const newDishes = [...newOrderForm.dishes];
+                    newDishes[index] = {
+                      ...newDishes[index],
+                      name: e.target.value
+                    };
+                    setNewOrderForm({
+                      ...newOrderForm,
+                      dishes: newDishes
+                    });
+                  }} />
+                        {newOrderForm.dishes.length > 1 && <Button className="bg-white text-[#E85A42] border border-[#E85A42] h-8 w-8 p-0 rounded-lg text-sm font-bold" onClick={() => {
+                    const newDishes = newOrderForm.dishes.filter((_, i) => i !== index);
+                    setNewOrderForm({
+                      ...newOrderForm,
+                      dishes: newDishes
+                    });
+                  }}>X</Button>}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <label className="text-sm text-[#8B7355]" style={{
+                    fontFamily: 'Nunito'
+                  }}>数量:</label>
+                        <input type="number" min="1" className="w-16 border border-[#FF8B4E] rounded-lg h-8 px-2 text-[#8B7355]" value={dish.quantity} onChange={e => {
+                    const newDishes = [...newOrderForm.dishes];
+                    newDishes[index] = {
+                      ...newDishes[index],
+                      quantity: parseInt(e.target.value) || 1
+                    };
+                    setNewOrderForm({
+                      ...newOrderForm,
+                      dishes: newDishes
+                    });
+                  }} />
+                        <label className="text-sm text-[#8B7355] ml-2" style={{
+                    fontFamily: 'Nunito'
+                  }}>单价:</label>
+                        <input type="number" min="0" step="0.01" className="w-20 border border-[#FF8B4E] rounded-lg h-8 px-2 text-[#8B7355]" value={dish.price} onChange={e => {
+                    const newDishes = [...newOrderForm.dishes];
+                    newDishes[index] = {
+                      ...newDishes[index],
+                      price: parseFloat(e.target.value) || 0
+                    };
+                    setNewOrderForm({
+                      ...newOrderForm,
+                      dishes: newDishes
+                    });
+                  }} />
+                      </div>
+                    </div>)}
+                </div>
+              </div>
+
+              {/* 留言 */}
+              <div className="bg-[#FCEEB8] rounded-xl p-4">
+                <label className="text-lg font-semibold text-[#FF6B35] mb-2 block" style={{
+              fontFamily: 'Quicksand'
+            }}>留言（可选）</label>
+                <textarea className="w-full bg-white border-2 border-[#FF8B4E] rounded-xl h-24 px-4 py-2 text-[#8B7355] resize-none" placeholder="特殊要求或备注" value={newOrderForm.message} onChange={e => setNewOrderForm({
+              ...newOrderForm,
+              message: e.target.value
+            })} />
+              </div>
+
+              {/* 订单预览 */}
+              <div className="bg-[#FCEEB8] rounded-xl p-4">
+                <label className="text-lg font-semibold text-[#FF6B35] mb-2 block" style={{
+              fontFamily: 'Quicksand'
+            }}>订单预览</label>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-sm text-[#8B7355]" style={{
+                  fontFamily: 'Nunito'
+                }}>菜品数量:</span>
+                    <span className="text-sm font-semibold text-[#FF6B35]">{newOrderForm.dishes.filter(d => d.name).length} 种</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-[#8B7355]" style={{
+                  fontFamily: 'Nunito'
+                }}>预计总价:</span>
+                    <span className="text-sm font-semibold text-[#FF6B35]">¥{newOrderForm.dishes.reduce((sum, d) => sum + (d.price || 0) * (d.quantity || 1), 0)}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 提交按钮 */}
+              <Button className="w-full bg-[#FF8B4E] text-white h-12 font-bold rounded-xl shadow-lg hover:bg-[#FF6B35]" onClick={handleCreateOrder} style={{
+            fontFamily: 'Quicksand'
+          }}>创建订单</Button>
+            </div>
+          </div>
+        </div>}
 
       {/* 订单详情弹窗 */}
       {selectedOrder && <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">

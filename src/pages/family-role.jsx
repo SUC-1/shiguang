@@ -18,6 +18,7 @@ export default function FamilyRole(props) {
   const [memberUsers, setMemberUsers] = useState([]);
   const [chefUsers, setChefUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [registering, setRegistering] = useState(false);
 
   // 获取角色用户数据 — 直接查询 users 数据模型
   const fetchRoleUsers = async () => {
@@ -105,6 +106,85 @@ export default function FamilyRole(props) {
         title: '获取用户数据失败',
         description: error.message || '网络错误，请稍后重试'
       });
+    }
+  };
+
+  // 注册角色 — 使用 wedaUpsertV2 创建或更新用户角色
+  const handleRegisterRole = async role => {
+    setRegistering(true);
+    try {
+      const openid = currentUser.userId;
+      if (!openid) {
+        toast({
+          variant: 'destructive',
+          title: '注册失败',
+          description: '无法获取用户信息，请先登录'
+        });
+        setRegistering(false);
+        return;
+      }
+      const result = await props.$w.cloud.callDataSource({
+        dataSourceName: 'users',
+        methodName: 'wedaUpsertV2',
+        params: {
+          filter: {
+            where: {
+              $and: [{
+                openid: {
+                  $eq: openid
+                }
+              }]
+            }
+          },
+          update: {
+            openid: openid,
+            nickname: currentUser.nickName || currentUser.name || '',
+            avatar: currentUser.avatarUrl || '',
+            role: role,
+            isActive: true
+          },
+          create: {
+            openid: openid,
+            nickname: currentUser.nickName || currentUser.name || '',
+            avatar: currentUser.avatarUrl || '',
+            role: role,
+            isActive: true
+          }
+        }
+      });
+      if (result && (result.count !== 0 || result.id)) {
+        toast({
+          variant: 'default',
+          title: '注册成功',
+          description: role === 'family_member' ? '已注册为家庭成员' : '已注册为家庭大厨'
+        });
+        await fetchRoleUsers();
+        if (role === 'family_member') {
+          navigateTo({
+            pageId: 'family-member',
+            params: {}
+          });
+        } else {
+          navigateTo({
+            pageId: 'family-chef',
+            params: {}
+          });
+        }
+      } else {
+        toast({
+          variant: 'destructive',
+          title: '注册失败',
+          description: '请稍后重试'
+        });
+      }
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: '注册失败',
+        description: error.message || '网络错误，请稍后重试'
+      });
+    } finally {
+      setRegistering(false);
     }
   };
 
@@ -243,6 +323,26 @@ export default function FamilyRole(props) {
             </div>
           </div>
         </div>
+
+        {/* 注册角色提示 */}
+        {memberCount === 0 && chefCount === 0 && <div className="mt-8 bg-white rounded-3xl shadow-xl p-6 text-center">
+            <Users className="h-10 w-10 text-[#FF8B4E] mx-auto mb-3" />
+            <p className="text-[#8B7355] text-base mb-4" style={{
+          fontFamily: 'Nunito'
+        }}>您尚未注册任何角色，请选择下方角色进行注册</p>
+            <div className="flex gap-4 justify-center">
+              <Button onClick={() => handleRegisterRole('family_member')} disabled={registering} className="bg-[#FF8B4E] text-white h-12 px-6 font-bold rounded-xl hover:bg-[#FF6B35] shadow-lg" style={{
+            fontFamily: 'Quicksand'
+          }}>
+                {registering ? <Loader2 className="h-5 w-5 animate-spin" /> : '注册为家庭成员'}
+              </Button>
+              <Button onClick={() => handleRegisterRole('family_chef')} disabled={registering} className="bg-[#9CCF4E] text-white h-12 px-6 font-bold rounded-xl hover:bg-[#FF6B35] shadow-lg" style={{
+            fontFamily: 'Quicksand'
+          }}>
+                {registering ? <Loader2 className="h-5 w-5 animate-spin" /> : '注册为家庭大厨'}
+              </Button>
+            </div>
+          </div>}
 
         <div className="mt-8 text-center">
           <Button onClick={() => window.history.back()} className="bg-white text-[#FF6B35] border-2 border-[#FF6B35] h-12 px-8 font-bold rounded-xl hover:bg-[#FF6B35] hover:text-white transition-colors" style={{
