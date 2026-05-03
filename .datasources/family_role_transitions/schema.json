@@ -1,0 +1,61 @@
+{
+  "name": "family_role_transitions",
+  "title": "家庭角色流转记录",
+  "schemas": [
+    {
+      "name": "familyGroupId",
+      "title": "所属家庭组ID",
+      "type": "String"
+    },
+    {
+      "name": "userId",
+      "title": "目标用户ID",
+      "type": "String"
+    },
+    {
+      "name": "nickname",
+      "title": "目标用户昵称",
+      "type": "String"
+    },
+    {
+      "name": "fromRole",
+      "title": "原角色",
+      "type": "String"
+    },
+    {
+      "name": "toRole",
+      "title": "新角色",
+      "type": "String"
+    },
+    {
+      "name": "operatorId",
+      "title": "操作人用户ID",
+      "type": "String"
+    },
+    {
+      "name": "operatorName",
+      "title": "操作人昵称",
+      "type": "String"
+    },
+    {
+      "name": "transitionType",
+      "title": "流转类型",
+      "type": "String"
+    },
+    {
+      "name": "reason",
+      "title": "变更原因",
+      "type": "MultiLineString"
+    },
+    {
+      "name": "status",
+      "title": "流转状态",
+      "type": "String"
+    },
+    {
+      "name": "effectiveTime",
+      "title": "生效时间",
+      "type": "Number"
+    }
+  ]
+}

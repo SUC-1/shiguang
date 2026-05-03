@@ -1,0 +1,54 @@
+{
+  "name": "family_permissions",
+  "title": "家庭权限配置",
+  "schemas": [
+    {
+      "name": "familyGroupId",
+      "title": "所属家庭组ID",
+      "type": "String"
+    },
+    {
+      "name": "roleName",
+      "title": "角色标识",
+      "type": "String"
+    },
+    {
+      "name": "roleTitle",
+      "title": "角色显示名称",
+      "type": "String"
+    },
+    {
+      "name": "description",
+      "title": "角色描述",
+      "type": "MultiLineString"
+    },
+    {
+      "name": "permissions",
+      "title": "权限列表",
+      "type": "Array",
+      "items": {
+        "type": "String"
+      }
+    },
+    {
+      "name": "scope",
+      "title": "权限范围",
+      "type": "String"
+    },
+    {
+      "name": "isDefault",
+      "title": "是否默认角色",
+      "type": "Boolean"
+    },
+    {
+      "name": "maxCount",
+      "title": "最大成员数",
+      "type": "Number"
+    },
+    {
+      "name": "sortOrder",
+      "title": "排序",
+      "type": "Number"
+    }
+  ]
+}

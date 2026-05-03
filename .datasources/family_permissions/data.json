@@ -1,0 +1,53 @@
+[
+  {
+    "_id": "fp001",
+    "familyGroupId": "fg001",
+    "roleName": "member",
+    "roleTitle": "家庭成员",
+    "description": "家庭成员可以点菜、留言，查看菜品和营养信息，选择留言同步目标",
+    "permissions": ["order", "message", "view_dishes", "view_nutrition"],
+    "scope": "family",
+    "isDefault": true,
+    "maxCount": 0,
+    "sortOrder": 1,
+    "createdAt": 1715731200000,
+    "updatedAt": 1715731200000,
+    "owner": "user_003",
+    "createBy": "user_003",
+    "updateBy": "user_003"
+  },
+  {
+    "_id": "fp002",
+    "familyGroupId": "fg001",
+    "roleName": "chef",
+    "roleTitle": "家庭大厨",
+    "description": "家庭大厨拥有家庭成员的所有权限，额外可以管理订单状态、管理菜品、查看备菜清单和烹饪指导",
+    "permissions": ["order", "message", "view_dishes", "view_nutrition", "manage_orders", "manage_dishes", "view_ingredients", "view_cooking_guide"],
+    "scope": "family",
+    "isDefault": true,
+    "maxCount": 3,
+    "sortOrder": 2,
+    "createdAt": 1715731200000,
+    "updatedAt": 1715731200000,
+    "owner": "user_003",
+    "createBy": "user_003",
+    "updateBy": "user_003"
+  },
+  {
+    "_id": "fp003",
+    "familyGroupId": "fg001",
+    "roleName": "admin",
+    "roleTitle": "家庭管理员",
+    "description": "家庭管理员拥有最高权限，可以管理成员、分配角色、修改权限配置、解散家庭组",
+    "permissions": ["order", "message", "view_dishes", "view_nutrition", "manage_orders", "manage_dishes", "view_ingredients", "view_cooking_guide", "manage_members", "manage_permissions", "manage_group"],
+    "scope": "family",
+    "isDefault": true,
+    "maxCount": 1,
+    "sortOrder": 3,
+    "createdAt": 1715731200000,
+    "updatedAt": 1715731200000,
+    "owner": "user_003",
+    "createBy": "user_003",
+    "updateBy": "user_003"
+  }
+]
