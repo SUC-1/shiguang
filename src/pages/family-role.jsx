@@ -494,7 +494,7 @@ export default function FamilyRole(props) {
           </div>}
 
         {/* 角色管理按钮（管理员可见） */}
-        {userPermissions && (userPermissions.role === 'admin' || userPermissions.role === 'owner') && <div className="mt-6 text-center">
+        {(userPermissions && (userPermissions.role === 'admin' || userPermissions.role === 'owner')) && <div className="mt-6 text-center">
             <Button onClick={() => setShowRoleManagement(true)} className="bg-[#9CCF4E] text-white h-12 px-6 font-bold rounded-xl hover:bg-[#FF6B35] shadow-lg" style={{
           fontFamily: 'Quicksand'
         }}>
@@ -503,7 +503,7 @@ export default function FamilyRole(props) {
           </div>}
 
         {/* 角色变更申请按钮 */}
-        {userPermissions && userPermissions.permissions?.canInviteMembers && <div className="mt-4 text-center">
+        {(userPermissions && userPermissions.permissions?.canInviteMembers) && <div className="mt-4 text-center">
             <Button onClick={() => setShowRoleTransition(true)} className="bg-[#FF8B4E] text-white h-12 px-6 font-bold rounded-xl hover:bg-[#FF6B35] shadow-lg" style={{
           fontFamily: 'Quicksand'
         }}>
@@ -528,7 +528,7 @@ export default function FamilyRole(props) {
             }}>角色管理</h2>
                 <Button className="bg-white text-gray-800 border-2 border-gray-300 rounded-xl p-2 hover:bg-gray-100" onClick={() => setShowRoleManagement(false)}>X</Button>
               </div>
-              {pendingTransitions.length > 0 ? <div>
+              {pendingTransitions.length > 0 && <div>
                   <h3 className="text-lg font-semibold text-[#FF6B35] mb-4" style={{
               fontFamily: 'Quicksand'
             }}>待审批申请</h3>
@@ -550,11 +550,12 @@ export default function FamilyRole(props) {
                         </div>
                       </div>)}
                   </div>
-                </div> : <p className="text-center text-[#8B7355] py-4" style={{
+                </div>}
+              {pendingTransitions.length === 0 && <p className="text-center text-[#8B7355] py-4" style={{
             fontFamily: 'Nunito'
           }}>暂无待审批申请</p>}
             </div>
-          </div>}
+          </div>
 
         {/* 角色变更申请弹窗 */}
         {showRoleTransition && <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
