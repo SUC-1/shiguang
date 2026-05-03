@@ -376,14 +376,10 @@ export default function FamilyRole(props) {
           </div>
           <h1 className="text-3xl font-bold text-white mb-2" style={{
           fontFamily: 'Quicksand'
-        }}>
-            温馨家庭
-          </h1>
+        }}>温馨家庭</h1>
           <p className="text-lg text-white opacity-90" style={{
           fontFamily: 'Nunito'
-        }}>
-            请选择您的角色
-          </p>
+        }}>请选择您的角色</p>
           {currentUser.nickName && <p className="text-sm text-white opacity-80 mt-2" style={{
           fontFamily: 'Nunito'
         }}>
@@ -403,14 +399,10 @@ export default function FamilyRole(props) {
               </div>
               <h2 className="text-2xl font-bold text-[#FF6B35]" style={{
               fontFamily: 'Quicksand'
-            }}>
-                家庭成员
-              </h2>
+            }}>家庭成员</h2>
               <p className="text-base text-[#8B7355] text-center" style={{
               fontFamily: 'Nunito'
-            }}>
-                点菜、留言、分享美食
-              </p>
+            }}>点菜、留言、分享美食</p>
               {memberCount > 0 ? <div className="text-center">
                   <p className="text-sm text-[#8B7355]" style={{
                 fontFamily: 'Nunito'
@@ -422,9 +414,7 @@ export default function FamilyRole(props) {
               <div className="flex items-center gap-2 mt-4">
                 <span className="text-sm text-[#FF6B35] font-semibold" style={{
                 fontFamily: 'Nunito'
-              }}>
-                  进入点菜
-                </span>
+              }}>进入点菜</span>
                 <ArrowRight className="h-5 w-5 text-[#FF6B35] group-hover:translate-x-1 transition-transform" />
               </div>
             </div>
@@ -441,14 +431,10 @@ export default function FamilyRole(props) {
               </div>
               <h2 className="text-2xl font-bold text-[#FF6B35]" style={{
               fontFamily: 'Quicksand'
-            }}>
-                家庭大厨
-              </h2>
+            }}>家庭大厨</h2>
               <p className="text-base text-[#8B7355] text-center" style={{
               fontFamily: 'Nunito'
-            }}>
-                查看订单、准备食材、烹饪指导
-              </p>
+            }}>查看订单、准备食材、烹饪指导</p>
               {chefCount > 0 ? <div className="text-center">
                   <p className="text-sm text-[#8B7355]" style={{
                 fontFamily: 'Nunito'
@@ -460,9 +446,7 @@ export default function FamilyRole(props) {
               <div className="flex items-center gap-2 mt-4">
                 <span className="text-sm text-[#FF6B35] font-semibold" style={{
                 fontFamily: 'Nunito'
-              }}>
-                  进入管理
-                </span>
+              }}>进入管理</span>
                 <ArrowRight className="h-5 w-5 text-[#FF6B35] group-hover:translate-x-1 transition-transform" />
               </div>
             </div>
@@ -524,7 +508,7 @@ export default function FamilyRole(props) {
             }}>角色管理</h2>
                 <Button className="bg-white text-gray-800 border-2 border-gray-300 rounded-xl p-2 hover:bg-gray-100" onClick={() => setShowRoleManagement(false)}>X</Button>
               </div>
-              {pendingTransitions.length > 0 && <div>
+              {pendingTransitions.length > 0 ? <div>
                   <h3 className="text-lg font-semibold text-[#FF6B35] mb-4" style={{
               fontFamily: 'Quicksand'
             }}>待审批申请</h3>
@@ -546,8 +530,7 @@ export default function FamilyRole(props) {
                         </div>
                       </div>)}
                   </div>
-                </div>}
-              {pendingTransitions.length === 0 && <p className="text-center text-[#8B7355] py-4" style={{
+                </div> : <p className="text-center text-[#8B7355] py-4" style={{
             fontFamily: 'Nunito'
           }}>暂无待审批申请</p>}
             </div>
