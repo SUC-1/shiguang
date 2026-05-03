@@ -30,7 +30,7 @@ export default function FamilyRole(props) {
     reason: ''
   });
 
-  // 获取角色用户数据 — 直接查询 users 数据模型
+  // 获取角色用户数据
   const fetchRoleUsers = async () => {
     try {
       const [memberResult, chefResult] = await Promise.all([props.$w.cloud.callDataSource({
@@ -119,7 +119,7 @@ export default function FamilyRole(props) {
     }
   };
 
-  // 注册角色 — 使用 wedaUpsertV2 创建或更新用户角色
+  // 注册角色
   const handleRegisterRole = async role => {
     setRegistering(true);
     try {
@@ -147,17 +147,17 @@ export default function FamilyRole(props) {
             }
           },
           update: {
-            openid: openid,
+            openid,
             nickname: currentUser.nickName || currentUser.name || '',
             avatar: currentUser.avatarUrl || '',
-            role: role,
+            role,
             isActive: true
           },
           create: {
-            openid: openid,
+            openid,
             nickname: currentUser.nickName || currentUser.name || '',
             avatar: currentUser.avatarUrl || '',
-            role: role,
+            role,
             isActive: true
           }
         }
@@ -169,17 +169,10 @@ export default function FamilyRole(props) {
           description: role === 'family_member' ? '已注册为家庭成员' : '已注册为家庭大厨'
         });
         await fetchRoleUsers();
-        if (role === 'family_member') {
-          navigateTo({
-            pageId: 'family-member',
-            params: {}
-          });
-        } else {
-          navigateTo({
-            pageId: 'family-chef',
-            params: {}
-          });
-        }
+        navigateTo({
+          pageId: role === 'family_member' ? 'family-member' : 'family-chef',
+          params: {}
+        });
       } else {
         toast({
           variant: 'destructive',
@@ -288,12 +281,11 @@ export default function FamilyRole(props) {
   // 审批角色变更申请
   const handleApproveTransition = async (transitionId, approve) => {
     try {
-      const action = approve ? 'approve' : 'reject';
       const result = await props.$w.cloud.callFunction({
         name: 'manageRoleTransitions',
         data: {
-          action: action,
-          transitionId: transitionId,
+          action: approve ? 'approve' : 'reject',
+          transitionId,
           approvalComment: approve ? '同意申请' : '拒绝申请'
         }
       });
@@ -320,8 +312,6 @@ export default function FamilyRole(props) {
       });
     }
   };
-
-  // 页面初始化
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
@@ -330,8 +320,6 @@ export default function FamilyRole(props) {
     };
     loadData();
   }, []);
-
-  // 渲染头像列表
   const renderAvatarList = (users, maxShow) => {
     if (!users || users.length === 0) return null;
     const display = users.slice(0, maxShow);
@@ -347,15 +335,11 @@ export default function FamilyRole(props) {
           </div>}
       </div>;
   };
-
-  // 刷新数据
   const handleRefresh = async () => {
     setLoading(true);
     await Promise.all([fetchRoleUsers(), fetchUserPermissions(), fetchPendingTransitions()]);
     setLoading(false);
   };
-
-  // 加载状态
   if (loading) {
     return <div className="min-h-screen bg-gradient-to-br from-[#FCEEB8] via-[#FF8B4E] to-[#FF6B35] flex items-center justify-center p-6">
         <div className="flex flex-col items-center gap-4">
@@ -364,9 +348,11 @@ export default function FamilyRole(props) {
           fontFamily: 'Quicksand'
         }}>加载角色数据...</p>
         </div>
-      </div>;
+      </div>
+    );
   }
-  return <div className="min-h-screen bg-gradient-to-br from-[#FCEEB8] via-[#FF8B4E] to-[#FF6B35] flex items-center justify-center p-6">
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-[#FCEEB8] via-[#FF8B4E] to-[#FF6B35] flex items-center justify-center p-6">
       <div className="max-w-4xl w-full">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
@@ -382,13 +368,10 @@ export default function FamilyRole(props) {
         }}>请选择您的角色</p>
           {currentUser.nickName && <p className="text-sm text-white opacity-80 mt-2" style={{
           fontFamily: 'Nunito'
-        }}>
-              当前用户：{currentUser.nickName || currentUser.name}
-            </p>}
+        }}>当前用户：{currentUser.nickName || currentUser.name}</p>}
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
-          {/* 家庭成员卡片 */}
           <div onClick={() => navigateTo({
           pageId: 'family-member',
           params: {}
@@ -420,7 +403,6 @@ export default function FamilyRole(props) {
             </div>
           </div>
 
-          {/* 家庭大厨卡片 */}
           <div onClick={() => navigateTo({
           pageId: 'family-chef',
           params: {}
@@ -453,7 +435,6 @@ export default function FamilyRole(props) {
           </div>
         </div>
 
-        {/* 注册角色提示 */}
         {memberCount === 0 && chefCount === 0 && <div className="mt-8 bg-white rounded-3xl shadow-xl p-6 text-center">
             <Users className="h-10 w-10 text-[#FF8B4E] mx-auto mb-3" />
             <p className="text-[#8B7355] text-base mb-4" style={{
@@ -473,33 +454,24 @@ export default function FamilyRole(props) {
             </div>
           </div>}
 
-        {/* 角色管理按钮（管理员可见） */}
         {userPermissions && (userPermissions.role === 'admin' || userPermissions.role === 'owner') && <div className="mt-6 text-center">
             <Button onClick={() => setShowRoleManagement(true)} className="bg-[#9CCF4E] text-white h-12 px-6 font-bold rounded-xl hover:bg-[#FF6B35] shadow-lg" style={{
           fontFamily: 'Quicksand'
-        }}>
-              角色管理
-            </Button>
+        }}>角色管理</Button>
           </div>}
 
-        {/* 角色变更申请按钮 */}
         {userPermissions && userPermissions.permissions?.canInviteMembers && <div className="mt-4 text-center">
             <Button onClick={() => setShowRoleTransition(true)} className="bg-[#FF8B4E] text-white h-12 px-6 font-bold rounded-xl hover:bg-[#FF6B35] shadow-lg" style={{
           fontFamily: 'Quicksand'
-        }}>
-              申请角色变更
-            </Button>
+        }}>申请角色变更</Button>
           </div>}
 
         <div className="mt-8 text-center">
           <Button onClick={() => window.history.back()} className="bg-white text-[#FF6B35] border-2 border-[#FF6B35] h-12 px-8 font-bold rounded-xl hover:bg-[#FF6B35] hover:text-white transition-colors" style={{
           fontFamily: 'Quicksand'
-        }}>
-            返回
-          </Button>
+        }}>返回</Button>
         </div>
 
-        {/* 角色管理弹窗 */}
         {showRoleManagement && <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-3xl shadow-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between mb-6">
@@ -536,7 +508,6 @@ export default function FamilyRole(props) {
             </div>
           </div>}
 
-        {/* 角色变更申请弹窗 */}
         {showRoleTransition && <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-3xl shadow-xl p-6 max-w-md w-full">
               <div className="flex items-center justify-between mb-6">
@@ -585,5 +556,6 @@ export default function FamilyRole(props) {
             </div>
           </div>}
       </div>
-    </div>;
+    </div>
+  );
 }
