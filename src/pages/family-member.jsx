@@ -38,35 +38,21 @@ export default function FamilyMember(props) {
     });
   };
 
-  // 获取菜品数据 — 直接查询 dishes 数据模型
+  // 获取菜品数据 — 调用 manageDishes 云函数
   const fetchDishes = async () => {
     try {
-      const result = await props.$w.cloud.callDataSource({
-        dataSourceName: 'dishes',
-        methodName: 'wedaGetRecordsV2',
-        params: {
-          filter: {
-            where: {
-              $and: [{
-                businessType: {
-                  $eq: 'family'
-                }
-              }]
-            }
-          },
-          orderBy: [{
-            createdAt: 'desc'
-          }],
-          select: {
-            $master: true
-          },
-          getCount: true,
-          pageSize: 50,
-          pageNumber: 1
+      const result = await props.$w.cloud.callFunction({
+        name: 'manageDishes',
+        data: {
+          action: 'query',
+          queryType: 'byBusinessType',
+          businessType: 'family',
+          page: 1,
+          pageSize: 50
         }
       });
-      if (result && result.records) {
-        const fetched = result.records.map(d => ({
+      if (result.result && result.result.success) {
+        const fetched = (result.result.data && result.result.data.dishes || []).map(d => ({
           id: d._id,
           name: d.name,
           image: d.image,
@@ -86,7 +72,7 @@ export default function FamilyMember(props) {
         toast({
           variant: 'destructive',
           title: '获取菜品失败',
-          description: '请稍后重试'
+          description: result.result && result.result.message || '请稍后重试'
         });
       }
     } catch (error) {
@@ -98,39 +84,22 @@ export default function FamilyMember(props) {
     }
   };
 
-  // 获取家庭成员数据 — 直接查询 users 数据模型
+  // 获取家庭成员数据 — 调用 manageUsers 云函数
   const fetchFamilyMembers = async () => {
     try {
-      const result = await props.$w.cloud.callDataSource({
-        dataSourceName: 'users',
-        methodName: 'wedaGetRecordsV2',
-        params: {
-          filter: {
-            where: {
-              $and: [{
-                role: {
-                  $eq: 'family_member'
-                }
-              }, {
-                isActive: {
-                  $eq: true
-                }
-              }]
-            }
-          },
-          orderBy: [{
-            createdAt: 'desc'
-          }],
-          select: {
-            $master: true
-          },
-          getCount: true,
-          pageSize: 20,
-          pageNumber: 1
+      const result = await props.$w.cloud.callFunction({
+        name: 'manageUsers',
+        data: {
+          action: 'query',
+          queryType: 'byRole',
+          role: 'family_member',
+          page: 1,
+          pageSize: 20
         }
       });
-      if (result && result.records) {
-        setFamilyMembers(result.records.map(u => ({
+      if (result.result && result.result.success) {
+        const users = result.result.data && result.result.data.users || [];
+        setFamilyMembers(users.map(u => ({
           id: u._id,
           nickname: u.nickname,
           avatar: u.avatar,
@@ -188,7 +157,7 @@ export default function FamilyMember(props) {
       });
     }
   };
-  // 提交订单 — 直接新增 orders 数据模型
+  // 提交订单 — 调用 manageOrders 云函数
   const handleSubmitOrder = async () => {
     if (selectedDishes.length === 0) {
       toast({
@@ -206,23 +175,19 @@ export default function FamilyMember(props) {
         price: d.price || 0
       }));
       const total = orderDishes.reduce((sum, d) => sum + d.price * d.quantity, 0);
-      const result = await props.$w.cloud.callDataSource({
-        dataSourceName: 'orders',
-        methodName: 'wedaCreateV2',
-        params: {
-          data: {
-            userName: currentUser.nickName || currentUser.name || '家庭成员',
-            dishes: orderDishes,
-            message: message || '',
-            boardColor: boardColor,
-            status: 'pending',
-            total: total,
-            businessType: 'family',
-            syncTarget: syncTarget
-          }
+      const result = await props.$w.cloud.callFunction({
+        name: 'manageOrders',
+        data: {
+          action: 'create',
+          userName: currentUser.nickName || currentUser.name || '家庭成员',
+          dishes: orderDishes,
+          message: message || '',
+          boardColor: boardColor,
+          businessType: 'family',
+          syncTarget: syncTarget
         }
       });
-      if (result && result.id) {
+      if (result.result && result.result.success) {
         toast({
           variant: 'default',
           title: '订单提交成功',
@@ -234,7 +199,7 @@ export default function FamilyMember(props) {
         toast({
           variant: 'destructive',
           title: '订单提交失败',
-          description: '请重试'
+          description: result.result && result.result.message || '请重试'
         });
       }
     } catch (error) {
