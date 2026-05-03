@@ -24,35 +24,21 @@ export default function FamilyChef(props) {
   const [loading, setLoading] = useState(true);
   const [updatingStatus, setUpdatingStatus] = useState({});
 
-  // 获取订单数据 — 直接查询 orders 数据模型
+  // 获取订单数据 — 调用 manageOrders 云函数
   const fetchOrders = async () => {
     try {
-      const result = await props.$w.cloud.callDataSource({
-        dataSourceName: 'orders',
-        methodName: 'wedaGetRecordsV2',
-        params: {
-          filter: {
-            where: {
-              $and: [{
-                businessType: {
-                  $eq: 'family'
-                }
-              }]
-            }
-          },
-          orderBy: [{
-            createdAt: 'desc'
-          }],
-          select: {
-            $master: true
-          },
-          getCount: true,
-          pageSize: 20,
-          pageNumber: 1
+      const result = await props.$w.cloud.callFunction({
+        name: 'manageOrders',
+        data: {
+          action: 'query',
+          queryType: 'byBusinessType',
+          businessType: 'family',
+          page: 1,
+          pageSize: 20
         }
       });
-      if (result && result.records) {
-        const fetchedOrders = result.records.map(order => ({
+      if (result.result && result.result.success && result.result.data) {
+        const fetchedOrders = (result.result.data.orders || []).map(order => ({
           id: order._id,
           userName: order.userName,
           dishes: (order.dishes || []).map(d => ({
@@ -72,7 +58,7 @@ export default function FamilyChef(props) {
         toast({
           variant: 'destructive',
           title: '获取订单失败',
-          description: '请稍后重试'
+          description: result.result && result.result.message || '请稍后重试'
         });
       }
     } catch (error) {
@@ -84,35 +70,21 @@ export default function FamilyChef(props) {
     }
   };
 
-  // 获取菜品数据 — 直接查询 dishes 数据模型
+  // 获取菜品数据 — 调用 manageDishes 云函数
   const fetchDishes = async () => {
     try {
-      const result = await props.$w.cloud.callDataSource({
-        dataSourceName: 'dishes',
-        methodName: 'wedaGetRecordsV2',
-        params: {
-          filter: {
-            where: {
-              $and: [{
-                businessType: {
-                  $eq: 'family'
-                }
-              }]
-            }
-          },
-          orderBy: [{
-            createdAt: 'desc'
-          }],
-          select: {
-            $master: true
-          },
-          getCount: true,
-          pageSize: 50,
-          pageNumber: 1
+      const result = await props.$w.cloud.callFunction({
+        name: 'manageDishes',
+        data: {
+          action: 'query',
+          queryType: 'byBusinessType',
+          businessType: 'family',
+          page: 1,
+          pageSize: 50
         }
       });
-      if (result && result.records) {
-        const fetched = result.records.map(d => ({
+      if (result.result && result.result.success && result.result.data) {
+        const fetched = (result.result.data.dishes || []).map(d => ({
           _id: d._id,
           name: d.name,
           image: d.image,
@@ -146,32 +118,22 @@ export default function FamilyChef(props) {
     if (diff < 3600) return `${Math.floor(diff / 60)}分钟前`;
     return `${Math.floor(diff / 3600)}小时前`;
   };
-  // 订单状态更新 — 直接更新 orders 数据模型
+  // 订单状态更新 — 调用 manageOrders 云函数
   const handleStatusChange = async (orderId, newStatus) => {
     setUpdatingStatus(prev => ({
       ...prev,
       [orderId]: true
     }));
     try {
-      const result = await props.$w.cloud.callDataSource({
-        dataSourceName: 'orders',
-        methodName: 'wedaUpdateV2',
-        params: {
-          data: {
-            status: newStatus
-          },
-          filter: {
-            where: {
-              $and: [{
-                _id: {
-                  $eq: orderId
-                }
-              }]
-            }
-          }
+      const result = await props.$w.cloud.callFunction({
+        name: 'manageOrders',
+        data: {
+          action: 'updateStatus',
+          orderId: orderId,
+          status: newStatus
         }
       });
-      if (result && result.count !== 0) {
+      if (result.result && result.result.success) {
         toast({
           variant: 'default',
           title: '状态更新成功',
@@ -182,7 +144,7 @@ export default function FamilyChef(props) {
         toast({
           variant: 'destructive',
           title: '状态更新失败',
-          description: '请重试'
+          description: result.result && result.result.message || '请重试'
         });
       }
     } catch (error) {
@@ -196,6 +158,73 @@ export default function FamilyChef(props) {
         ...prev,
         [orderId]: false
       }));
+    }
+  };
+
+  // 菜品状态更新 — 调用 manageDishes 云函数
+  const handleDishUpdate = async (dishId, updates) => {
+    try {
+      const result = await props.$w.cloud.callFunction({
+        name: 'manageDishes',
+        data: {
+          action: 'update',
+          dishId: dishId,
+          ...updates
+        }
+      });
+      if (result.result && result.result.success) {
+        toast({
+          variant: 'default',
+          title: '菜品更新成功',
+          description: '菜品信息已更新'
+        });
+        await fetchDishes();
+      } else {
+        toast({
+          variant: 'destructive',
+          title: '菜品更新失败',
+          description: result.result && result.result.message || '请重试'
+        });
+      }
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: '菜品更新失败',
+        description: error.message || '网络错误，请重试'
+      });
+    }
+  };
+
+  // 菜品删除 — 调用 manageDishes 云函数
+  const handleDishDelete = async dishId => {
+    try {
+      const result = await props.$w.cloud.callFunction({
+        name: 'manageDishes',
+        data: {
+          action: 'delete',
+          dishId: dishId
+        }
+      });
+      if (result.result && result.result.success) {
+        toast({
+          variant: 'default',
+          title: '菜品删除成功',
+          description: '菜品已从列表中移除'
+        });
+        await fetchDishes();
+      } else {
+        toast({
+          variant: 'destructive',
+          title: '菜品删除失败',
+          description: result.result && result.result.message || '请重试'
+        });
+      }
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: '菜品删除失败',
+        description: error.message || '网络错误，请重试'
+      });
     }
   };
   const handleShowCookingGuide = dish => {
@@ -511,11 +540,36 @@ export default function FamilyChef(props) {
                       <span>{(dish.ingredients || []).length}种配料</span>
                     </div>
                   </div>
-                  <Button className="w-full bg-[#FF8B4E] text-white h-10 font-bold rounded-xl shadow-lg hover:bg-[#FF6B35]" style={{
-              fontFamily: 'Quicksand'
-            }}>
-                    开始学习
-                  </Button>
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className={`text-xs font-semibold px-2 py-1 rounded-full ${dish.isCustom ? 'bg-[#9CCF4E]/20 text-[#9CCF4E]' : 'bg-[#FF8B4E]/20 text-[#FF8B4E]'}`} style={{
+                fontFamily: 'Nunito'
+              }}>
+                      {dish.isCustom ? '自定义' : '标准'}
+                    </span>
+                    <span className="text-lg font-bold text-[#FF6B35]" style={{
+                fontFamily: 'Quicksand'
+              }}>¥{dish.price}</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button className="flex-1 bg-[#FF8B4E] text-white h-10 font-bold rounded-xl shadow-lg hover:bg-[#FF6B35]" style={{
+                fontFamily: 'Quicksand'
+              }} onClick={e => {
+                e.stopPropagation();
+                handleDishUpdate(dish._id, {
+                  isCustom: !dish.isCustom
+                });
+              }}>
+                      {dish.isCustom ? '设为标准' : '设为自定义'}
+                    </Button>
+                    <Button className="bg-white text-[#E85A42] border-2 border-[#E85A42] h-10 px-4 font-bold rounded-xl hover:bg-[#E85A42] hover:text-white" style={{
+                fontFamily: 'Quicksand'
+              }} onClick={e => {
+                e.stopPropagation();
+                handleDishDelete(dish._id);
+              }}>
+                      删除
+                    </Button>
+                  </div>
                 </div>
               </div>)}
           </div>}
