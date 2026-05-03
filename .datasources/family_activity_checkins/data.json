@@ -1,0 +1,43 @@
+{
+  "records": [
+    {
+      "_id": "checkin_001",
+      "activityId": "activity_001",
+      "userId": "user_001",
+      "nickname": "爸爸",
+      "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=dad",
+      "checkinTime": "2026-05-01T09:05:00.000Z",
+      "checkinLocation": "公园北门",
+      "checkinPhoto": "https://images.unsplash.com/photo-1528605248644-14dd04022da1?w=800",
+      "notes": "准时到达",
+      "createdAt": "2026-05-01T09:05:00.000Z",
+      "updatedAt": "2026-05-01T09:05:00.000Z"
+    },
+    {
+      "_id": "checkin_002",
+      "activityId": "activity_001",
+      "userId": "user_002",
+      "nickname": "妈妈",
+      "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=mom",
+      "checkinTime": "2026-05-01T09:10:00.000Z",
+      "checkinLocation": "公园北门",
+      "checkinPhoto": "",
+      "notes": "",
+      "createdAt": "2026-05-01T09:10:00.000Z",
+      "updatedAt": "2026-05-01T09:10:00.000Z"
+    },
+    {
+      "_id": "checkin_003",
+      "activityId": "activity_002",
+      "userId": "user_001",
+      "nickname": "爸爸",
+      "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=dad",
+      "checkinTime": "2026-04-15T18:30:00.000Z",
+      "checkinLocation": "家中客厅",
+      "checkinPhoto": "",
+      "notes": "准备就绪",
+      "createdAt": "2026-04-15T18:30:00.000Z",
+      "updatedAt": "2026-04-15T18:30:00.000Z"
+    }
+  ]
+}

@@ -1,0 +1,112 @@
+{
+  "records": [
+    {
+      "_id": "part_001",
+      "activityId": "act_001",
+      "userId": "user_001",
+      "nickname": "爸爸",
+      "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=dad",
+      "status": "registered",
+      "registeredAt": "2026-05-02T10:00:00Z",
+      "notes": "会带帐篷和野餐垫",
+      "createdAt": "2026-05-02T10:00:00Z",
+      "updatedAt": "2026-05-02T10:00:00Z"
+    },
+    {
+      "_id": "part_002",
+      "activityId": "act_001",
+      "userId": "user_002",
+      "nickname": "妈妈",
+      "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=mom",
+      "status": "registered",
+      "registeredAt": "2026-05-02T10:30:00Z",
+      "notes": "准备三明治和水果",
+      "createdAt": "2026-05-02T10:30:00Z",
+      "updatedAt": "2026-05-02T10:30:00Z"
+    },
+    {
+      "_id": "part_003",
+      "activityId": "act_001",
+      "userId": "user_003",
+      "nickname": "小明",
+      "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=xiaoming",
+      "status": "registered",
+      "registeredAt": "2026-05-02T11:00:00Z",
+      "notes": "",
+      "createdAt": "2026-05-02T11:00:00Z",
+      "updatedAt": "2026-05-02T11:00:00Z"
+    },
+    {
+      "_id": "part_004",
+      "activityId": "act_001",
+      "userId": "user_004",
+      "nickname": "小红",
+      "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=xiaohong",
+      "status": "registered",
+      "registeredAt": "2026-05-02T14:00:00Z",
+      "notes": "",
+      "createdAt": "2026-05-02T14:00:00Z",
+      "updatedAt": "2026-05-02T14:00:00Z"
+    },
+    {
+      "_id": "part_005",
+      "activityId": "act_002",
+      "userId": "user_001",
+      "nickname": "爸爸",
+      "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=dad",
+      "status": "registered",
+      "registeredAt": "2026-05-02T09:00:00Z",
+      "notes": "",
+      "createdAt": "2026-05-02T09:00:00Z",
+      "updatedAt": "2026-05-02T09:00:00Z"
+    },
+    {
+      "_id": "part_006",
+      "activityId": "act_002",
+      "userId": "user_002",
+      "nickname": "妈妈",
+      "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=mom",
+      "status": "registered",
+      "registeredAt": "2026-05-02T09:30:00Z",
+      "notes": "准备爆米花",
+      "createdAt": "2026-05-02T09:30:00Z",
+      "updatedAt": "2026-05-02T09:30:00Z"
+    },
+    {
+      "_id": "part_007",
+      "activityId": "act_003",
+      "userId": "user_001",
+      "nickname": "爸爸",
+      "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=dad",
+      "status": "attended",
+      "registeredAt": "2026-04-15T10:00:00Z",
+      "notes": "",
+      "createdAt": "2026-04-15T10:00:00Z",
+      "updatedAt": "2026-04-21T10:00:00Z"
+    },
+    {
+      "_id": "part_008",
+      "activityId": "act_003",
+      "userId": "user_002",
+      "nickname": "妈妈",
+      "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=mom",
+      "status": "attended",
+      "registeredAt": "2026-04-15T10:30:00Z",
+      "notes": "",
+      "createdAt": "2026-04-15T10:30:00Z",
+      "updatedAt": "2026-04-21T10:00:00Z"
+    },
+    {
+      "_id": "part_009",
+      "activityId": "act_003",
+      "userId": "user_003",
+      "nickname": "小明",
+      "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=xiaoming",
+      "status": "attended",
+      "registeredAt": "2026-04-16T08:00:00Z",
+      "notes": "",
+      "createdAt": "2026-04-16T08:00:00Z",
+      "updatedAt": "2026-04-21T10:00:00Z"
+    }
+  ]
+}

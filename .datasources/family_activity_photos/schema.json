@@ -1,0 +1,64 @@
+{
+  "title": "活动照片",
+  "type": "object",
+  "properties": {
+    "_id": {
+      "type": "string",
+      "description": "照片ID"
+    },
+    "activityId": {
+      "type": "string",
+      "description": "活动ID"
+    },
+    "url": {
+      "type": "string",
+      "description": "照片URL",
+      "format": "uri"
+    },
+    "thumbnailUrl": {
+      "type": "string",
+      "description": "缩略图URL",
+      "format": "uri"
+    },
+    "description": {
+      "type": "string",
+      "description": "照片描述"
+    },
+    "uploadedBy": {
+      "type": "string",
+      "description": "上传者用户ID"
+    },
+    "uploaderNickname": {
+      "type": "string",
+      "description": "上传者昵称"
+    },
+    "uploadedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "上传时间"
+    },
+    "fileSize": {
+      "type": "integer",
+      "description": "文件大小（字节）"
+    },
+    "width": {
+      "type": "integer",
+      "description": "图片宽度"
+    },
+    "height": {
+      "type": "integer",
+      "description": "图片高度"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "创建时间"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "更新时间"
+    }
+  },
+  "required": ["activityId", "url", "uploadedBy"]
+}

@@ -1,0 +1,68 @@
+{
+  "title": "家庭活动",
+  "type": "object",
+  "properties": {
+    "_id": {
+      "type": "string",
+      "description": "活动ID"
+    },
+    "name": {
+      "type": "string",
+      "description": "活动名称",
+      "maxLength": 100
+    },
+    "description": {
+      "type": "string",
+      "description": "活动描述"
+    },
+    "coverImage": {
+      "type": "string",
+      "description": "封面图片URL",
+      "format": "uri"
+    },
+    "startTime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "开始时间"
+    },
+    "endTime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "结束时间"
+    },
+    "location": {
+      "type": "string",
+      "description": "活动地点",
+      "maxLength": 200
+    },
+    "maxParticipants": {
+      "type": "integer",
+      "description": "最大参与人数",
+      "minimum": 1
+    },
+    "status": {
+      "type": "string",
+      "enum": ["planning", "ongoing", "completed", "cancelled"],
+      "description": "活动状态"
+    },
+    "familyGroupId": {
+      "type": "string",
+      "description": "所属家庭组ID"
+    },
+    "createdBy": {
+      "type": "string",
+      "description": "创建者用户ID"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "创建时间"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "更新时间"
+    }
+  },
+  "required": ["name", "startTime", "familyGroupId", "createdBy", "status"]
+}

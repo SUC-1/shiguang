@@ -1,0 +1,79 @@
+{
+  "records": [
+    {
+      "_id": "act_001",
+      "name": "周末亲子野餐",
+      "description": "带上美食和家人，一起去公园享受美好时光！准备了各种小食和游戏，让孩子们尽情玩耍。",
+      "coverImage": "https://images.unsplash.com/photo-1528605248644-14dd04022da1?w=800",
+      "startTime": "2026-05-10T09:00:00Z",
+      "endTime": "2026-05-10T17:00:00Z",
+      "location": "朝阳公园草坪区",
+      "maxParticipants": 15,
+      "status": "ongoing",
+      "familyGroupId": "fg_001",
+      "createdBy": "user_001",
+      "createdAt": "2026-05-01T10:00:00Z",
+      "updatedAt": "2026-05-01T10:00:00Z"
+    },
+    {
+      "_id": "act_002",
+      "name": "家庭电影之夜",
+      "description": "本周五晚上一起观看《疯狂动物城》，准备了爆米花和饮料，享受温馨的家庭时光。",
+      "coverImage": "https://images.unsplash.com/photo-1489599849927-2ee91cede1ba?w=800",
+      "startTime": "2026-05-09T19:00:00Z",
+      "endTime": "2026-05-09T22:00:00Z",
+      "location": "客厅",
+      "maxParticipants": 8,
+      "status": "planning",
+      "familyGroupId": "fg_001",
+      "createdBy": "user_002",
+      "createdAt": "2026-05-02T08:00:00Z",
+      "updatedAt": "2026-05-02T08:00:00Z"
+    },
+    {
+      "_id": "act_003",
+      "name": "春季烧烤聚会",
+      "description": "在院子里举办烧烤派对，准备了各种肉类、蔬菜和饮料，邀请亲朋好友一起欢聚。",
+      "coverImage": "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800",
+      "startTime": "2026-04-20T11:00:00Z",
+      "endTime": "2026-04-20T20:00:00Z",
+      "location": "家中后院",
+      "maxParticipants": 20,
+      "status": "completed",
+      "familyGroupId": "fg_001",
+      "createdBy": "user_001",
+      "createdAt": "2026-04-15T09:00:00Z",
+      "updatedAt": "2026-04-21T10:00:00Z"
+    },
+    {
+      "_id": "act_004",
+      "name": "母亲节特别活动",
+      "description": "为妈妈准备惊喜，包括手工贺卡、鲜花和特别晚餐，表达我们对妈妈的爱。",
+      "coverImage": "https://images.unsplash.com/photo-1544211698-129a1e93cce4?w=800",
+      "startTime": "2026-05-11T14:00:00Z",
+      "endTime": "2026-05-11T21:00:00Z",
+      "location": "家中",
+      "maxParticipants": 10,
+      "status": "planning",
+      "familyGroupId": "fg_001",
+      "createdBy": "user_003",
+      "createdAt": "2026-05-02T14:00:00Z",
+      "updatedAt": "2026-05-02T14:00:00Z"
+    },
+    {
+      "_id": "act_005",
+      "name": "端午包粽子大赛",
+      "description": "全家一起学包粽子，准备了各种馅料，比赛谁包的粽子最好看最好吃！",
+      "coverImage": "https://images.unsplash.com/photo-1563245372-f21724e3856d?w=800",
+      "startTime": "2026-05-31T10:00:00Z",
+      "endTime": "2026-05-31T16:00:00Z",
+      "location": "厨房",
+      "maxParticipants": 12,
+      "status": "planning",
+      "familyGroupId": "fg_001",
+      "createdBy": "user_001",
+      "createdAt": "2026-05-01T16:00:00Z",
+      "updatedAt": "2026-05-01T16:00:00Z"
+    }
+  ]
+}

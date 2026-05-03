@@ -7,6 +7,10 @@ import DINING_HOME from '../pages/dining-home.jsx';
 import DINING_MENU from '../pages/dining-menu.jsx';
 import DINING_QRCODE from '../pages/dining-qrcode.jsx';
 import AI_COPYWRITING from '../pages/ai-copywriting.jsx';
+import FAMILY_ACTIVITIES from '../pages/family-activities.jsx';
+import FAMILY_ACTIVITY-DETAIL from '../pages/family-activity-detail.jsx';
+import FAMILY_ACTIVITY-FORM from '../pages/family-activity-form.jsx';
+import FAMILY_ACTIVITY-PHOTOS from '../pages/family-activity-photos.jsx';
 export const routers = [{
   id: "login",
   component: LOGIN
@@ -34,4 +38,16 @@ export const routers = [{
 }, {
   id: "ai-copywriting",
   component: AI_COPYWRITING
+}, {
+  id: "family-activities",
+  component: FAMILY_ACTIVITIES
+}, {
+  id: "family-activity-detail",
+  component: FAMILY_ACTIVITY-DETAIL
+}, {
+  id: "family-activity-form",
+  component: FAMILY_ACTIVITY-FORM
+}, {
+  id: "family-activity-photos",
+  component: FAMILY_ACTIVITY-PHOTOS
 }]

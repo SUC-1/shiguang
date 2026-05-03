@@ -1,0 +1,56 @@
+{
+  "title": "活动签到",
+  "type": "object",
+  "properties": {
+    "_id": {
+      "type": "string",
+      "description": "签到记录ID"
+    },
+    "activityId": {
+      "type": "string",
+      "description": "活动ID"
+    },
+    "userId": {
+      "type": "string",
+      "description": "用户ID"
+    },
+    "nickname": {
+      "type": "string",
+      "description": "用户昵称"
+    },
+    "avatar": {
+      "type": "string",
+      "description": "用户头像URL",
+      "format": "uri"
+    },
+    "checkinTime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "签到时间"
+    },
+    "checkinLocation": {
+      "type": "string",
+      "description": "签到地点"
+    },
+    "checkinPhoto": {
+      "type": "string",
+      "description": "签到照片URL",
+      "format": "uri"
+    },
+    "notes": {
+      "type": "string",
+      "description": "签到备注"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "创建时间"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "更新时间"
+    }
+  },
+  "required": ["activityId", "userId", "checkinTime"]
+}

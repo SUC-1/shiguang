@@ -1,0 +1,52 @@
+{
+  "title": "活动参与者",
+  "type": "object",
+  "properties": {
+    "_id": {
+      "type": "string",
+      "description": "参与记录ID"
+    },
+    "activityId": {
+      "type": "string",
+      "description": "活动ID"
+    },
+    "userId": {
+      "type": "string",
+      "description": "用户ID"
+    },
+    "nickname": {
+      "type": "string",
+      "description": "用户昵称"
+    },
+    "avatar": {
+      "type": "string",
+      "description": "用户头像URL",
+      "format": "uri"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["registered", "attended", "cancelled"],
+      "description": "参与状态"
+    },
+    "registeredAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "报名时间"
+    },
+    "notes": {
+      "type": "string",
+      "description": "备注信息"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "创建时间"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "更新时间"
+    }
+  },
+  "required": ["activityId", "userId", "status"]
+}
