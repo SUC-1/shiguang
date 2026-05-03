@@ -19,105 +19,90 @@ export default function FamilyRole(props) {
   const [chefUsers, setChefUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // 获取角色用户数据 — 调用 manageUsers 云函数
+  // 获取角色用户数据 — 直接查询 users 数据模型
   const fetchRoleUsers = async () => {
     try {
-      const [memberResult, chefResult] = await Promise.all([props.$w.cloud.callFunction({
-        name: 'manageUsers',
-        data: {
-          action: 'query',
-          queryType: 'byRole',
-          role: 'family_member',
-          page: 1,
-          pageSize: 10
+      const [memberResult, chefResult] = await Promise.all([props.$w.cloud.callDataSource({
+        dataSourceName: 'users',
+        methodName: 'wedaGetRecordsV2',
+        params: {
+          filter: {
+            where: {
+              $and: [{
+                role: {
+                  $eq: 'family_member'
+                }
+              }, {
+                isActive: {
+                  $eq: true
+                }
+              }]
+            }
+          },
+          orderBy: [{
+            createdAt: 'desc'
+          }],
+          select: {
+            $master: true
+          },
+          getCount: true,
+          pageSize: 10,
+          pageNumber: 1
         }
-      }), props.$w.cloud.callFunction({
-        name: 'manageUsers',
-        data: {
-          action: 'query',
-          queryType: 'byRole',
-          role: 'family_chef',
-          page: 1,
-          pageSize: 10
+      }), props.$w.cloud.callDataSource({
+        dataSourceName: 'users',
+        methodName: 'wedaGetRecordsV2',
+        params: {
+          filter: {
+            where: {
+              $and: [{
+                role: {
+                  $eq: 'family_chef'
+                }
+              }, {
+                isActive: {
+                  $eq: true
+                }
+              }]
+            }
+          },
+          orderBy: [{
+            createdAt: 'desc'
+          }],
+          select: {
+            $master: true
+          },
+          getCount: true,
+          pageSize: 10,
+          pageNumber: 1
         }
       })]);
-      if (memberResult.result && memberResult.result.success) {
-        const users = memberResult.result.data && memberResult.result.data.users || [];
-        const mappedUsers = users.map(u => ({
+      if (memberResult && memberResult.records) {
+        const users = memberResult.records.map(u => ({
           _id: u._id,
           nickname: u.nickname,
           avatar: u.avatar,
           role: u.role,
           isActive: u.isActive
         }));
-        setMemberCount(memberResult.result.data ? memberResult.result.data.total : mappedUsers.length);
-        setMemberUsers(mappedUsers.slice(0, 3));
+        setMemberCount(memberResult.total || users.length);
+        setMemberUsers(users.slice(0, 3));
       }
-      if (chefResult.result && chefResult.result.success) {
-        const users = chefResult.result.data && chefResult.result.data.users || [];
-        const mappedUsers = users.map(u => ({
+      if (chefResult && chefResult.records) {
+        const users = chefResult.records.map(u => ({
           _id: u._id,
           nickname: u.nickname,
           avatar: u.avatar,
           role: u.role,
           isActive: u.isActive
         }));
-        setChefCount(chefResult.result.data ? chefResult.result.data.total : mappedUsers.length);
-        setChefUsers(mappedUsers.slice(0, 3));
-      }
-      if (!memberResult.result?.success && !chefResult.result?.success) {
-        toast({
-          variant: 'destructive',
-          title: '获取用户数据失败',
-          description: memberResult.result && memberResult.result.message || chefResult.result && chefResult.result.message || '请稍后重试'
-        });
+        setChefCount(chefResult.total || users.length);
+        setChefUsers(users.slice(0, 3));
       }
     } catch (error) {
       toast({
         variant: 'destructive',
         title: '获取用户数据失败',
-        description: error.message || '网络错误，请稍后重试'
-      });
-    }
-  };
-
-  // 角色切换 — 调用 manageUsers 云函数更新当前用户角色
-  const handleSwitchRole = async newRole => {
-    if (!currentUser.userId) {
-      toast({
-        variant: 'destructive',
-        title: '切换角色失败',
-        description: '未获取到当前用户信息，请先登录'
-      });
-      return;
-    }
-    try {
-      const result = await props.$w.cloud.callFunction({
-        name: 'manageUsers',
-        data: {
-          action: 'update',
-          userId: currentUser.userId,
-          role: newRole
-        }
-      });
-      if (result.result && result.result.success) {
-        toast({
-          variant: 'default',
-          title: '角色切换成功',
-          description: `已切换为${newRole === 'family_member' ? '家庭成员' : '家庭大厨'}`
-        });
-        await fetchRoleUsers();
-      } else {
-        toast({
-          variant: 'destructive',
-          title: '角色切换失败',
-          description: result.result && result.result.message || '请稍后重试'
-        });
-      }
-    } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: '角色切换失败',
         description: error.message || '网络错误，请稍后重试'
       });
     }
@@ -147,30 +132,6 @@ export default function FamilyRole(props) {
         {remaining > 0 && <div className="w-8 h-8 rounded-full border-2 border-white bg-[#FF6B35] flex items-center justify-center shadow-sm">
             <span className="text-white text-xs font-bold">+{remaining}</span>
           </div>}
-      </div>;
-  };
-
-  // 渲染用户列表详情
-  const renderUserList = (users, roleLabel) => {
-    if (!users || users.length === 0) return <p className="text-sm text-[#8B7355]" style={{
-      fontFamily: 'Nunito'
-    }}>暂无注册{roleLabel}</p>;
-    return <div className="space-y-2 mt-3">
-        {users.map(user => <div key={user._id} className="flex items-center gap-3 bg-[#FCEEB8] rounded-xl px-3 py-2">
-            <div className="w-8 h-8 rounded-full border-2 border-[#FF8B4E] overflow-hidden shadow-sm flex-shrink-0">
-              {user.avatar ? <img src={user.avatar} alt={user.nickname} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-[#FF8B4E] flex items-center justify-center text-white text-xs font-bold">
-                  {(user.nickname || '?')[0]}
-                </div>}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-[#FF6B35] truncate" style={{
-            fontFamily: 'Quicksand'
-          }}>{user.nickname || '未命名'}</p>
-              <p className={`text-xs font-semibold ${user.isActive ? 'text-[#9CCF4E]' : 'text-[#E85A42]'}`} style={{
-            fontFamily: 'Nunito'
-          }}>{user.isActive ? '在线' : '离线'}</p>
-            </div>
-          </div>)}
       </div>;
   };
 
@@ -205,7 +166,7 @@ export default function FamilyRole(props) {
             </p>}
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6 mb-6">
+        <div className="grid md:grid-cols-2 gap-6">
           {/* 家庭成员卡片 */}
           <div onClick={() => navigateTo({
           pageId: 'family-member',
@@ -217,10 +178,14 @@ export default function FamilyRole(props) {
               </div>
               <h2 className="text-2xl font-bold text-[#FF6B35]" style={{
               fontFamily: 'Quicksand'
-            }}>家庭成员</h2>
+            }}>
+                家庭成员
+              </h2>
               <p className="text-base text-[#8B7355] text-center" style={{
               fontFamily: 'Nunito'
-            }}>点菜、留言、分享美食</p>
+            }}>
+                点菜、留言、分享美食
+              </p>
               {memberCount > 0 ? <div className="text-center">
                   <p className="text-sm text-[#8B7355]" style={{
                 fontFamily: 'Nunito'
@@ -232,7 +197,9 @@ export default function FamilyRole(props) {
               <div className="flex items-center gap-2 mt-4">
                 <span className="text-sm text-[#FF6B35] font-semibold" style={{
                 fontFamily: 'Nunito'
-              }}>进入点菜</span>
+              }}>
+                  进入点菜
+                </span>
                 <ArrowRight className="h-5 w-5 text-[#FF6B35] group-hover:translate-x-1 transition-transform" />
               </div>
             </div>
@@ -249,10 +216,14 @@ export default function FamilyRole(props) {
               </div>
               <h2 className="text-2xl font-bold text-[#FF6B35]" style={{
               fontFamily: 'Quicksand'
-            }}>家庭大厨</h2>
+            }}>
+                家庭大厨
+              </h2>
               <p className="text-base text-[#8B7355] text-center" style={{
               fontFamily: 'Nunito'
-            }}>查看订单、准备食材、烹饪指导</p>
+            }}>
+                查看订单、准备食材、烹饪指导
+              </p>
               {chefCount > 0 ? <div className="text-center">
                   <p className="text-sm text-[#8B7355]" style={{
                 fontFamily: 'Nunito'
@@ -264,57 +235,21 @@ export default function FamilyRole(props) {
               <div className="flex items-center gap-2 mt-4">
                 <span className="text-sm text-[#FF6B35] font-semibold" style={{
                 fontFamily: 'Nunito'
-              }}>进入管理</span>
+              }}>
+                  进入管理
+                </span>
                 <ArrowRight className="h-5 w-5 text-[#FF6B35] group-hover:translate-x-1 transition-transform" />
               </div>
             </div>
           </div>
         </div>
 
-        {/* 角色列表详情 */}
-        <div className="grid md:grid-cols-2 gap-6 mb-6">
-          <div className="bg-white/90 backdrop-blur rounded-3xl shadow-xl p-6">
-            <h3 className="text-lg font-bold text-[#FF6B35] mb-3" style={{
-            fontFamily: 'Quicksand'
-          }}>
-              <Heart className="h-5 w-5 inline mr-1" />成员列表
-            </h3>
-            {renderUserList(memberUsers, '成员')}
-          </div>
-          <div className="bg-white/90 backdrop-blur rounded-3xl shadow-xl p-6">
-            <h3 className="text-lg font-bold text-[#FF6B35] mb-3" style={{
-            fontFamily: 'Quicksand'
-          }}>
-              <ChefHat className="h-5 w-5 inline mr-1" />大厨列表
-            </h3>
-            {renderUserList(chefUsers, '大厨')}
-          </div>
-        </div>
-
-        {/* 角色切换区域 */}
-        {currentUser.userId && <div className="bg-white/90 backdrop-blur rounded-3xl shadow-xl p-6 mb-6">
-            <h3 className="text-lg font-bold text-[#FF6B35] mb-4" style={{
-          fontFamily: 'Quicksand'
-        }}>
-              <Users className="h-5 w-5 inline mr-1" />切换我的角色
-            </h3>
-            <p className="text-sm text-[#8B7355] mb-4" style={{
-          fontFamily: 'Nunito'
-        }}>当前用户：{currentUser.nickName || currentUser.name || '未知'}</p>
-            <div className="grid grid-cols-2 gap-4">
-              <Button onClick={() => handleSwitchRole('family_member')} className="bg-gradient-to-r from-[#FF8B4E] to-[#FF6B35] text-white h-12 px-4 font-bold rounded-xl hover:opacity-90 transition-opacity" style={{
-            fontFamily: 'Quicksand'
-          }}>切换为家庭成员</Button>
-              <Button onClick={() => handleSwitchRole('family_chef')} className="bg-gradient-to-r from-[#9CCF4E] to-[#FF6B35] text-white h-12 px-4 font-bold rounded-xl hover:opacity-90 transition-opacity" style={{
-            fontFamily: 'Quicksand'
-          }}>切换为家庭大厨</Button>
-            </div>
-          </div>}
-
-        <div className="text-center">
+        <div className="mt-8 text-center">
           <Button onClick={() => window.history.back()} className="bg-white text-[#FF6B35] border-2 border-[#FF6B35] h-12 px-8 font-bold rounded-xl hover:bg-[#FF6B35] hover:text-white transition-colors" style={{
           fontFamily: 'Quicksand'
-        }}>返回</Button>
+        }}>
+            返回
+          </Button>
         </div>
       </div>
     </div>;
