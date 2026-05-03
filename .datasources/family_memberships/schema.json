@@ -1,0 +1,44 @@
+{
+  "name": "family_memberships",
+  "title": "家庭成员关系",
+  "schemas": [
+    {
+      "name": "familyGroupId",
+      "title": "所属家庭组ID",
+      "type": "String"
+    },
+    {
+      "name": "userId",
+      "title": "用户ID",
+      "type": "String"
+    },
+    {
+      "name": "nickname",
+      "title": "家庭内昵称",
+      "type": "String"
+    },
+    {
+      "name": "role",
+      "title": "角色",
+      "type": "String"
+    },
+    {
+      "name": "permissions",
+      "title": "权限列表",
+      "type": "Array",
+      "items": {
+        "type": "String"
+      }
+    },
+    {
+      "name": "status",
+      "title": "状态",
+      "type": "String"
+    },
+    {
+      "name": "joinDate",
+      "title": "加入时间",
+      "type": "Number"
+    }
+  ]
+}

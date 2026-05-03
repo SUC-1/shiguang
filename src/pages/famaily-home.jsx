@@ -25,6 +25,8 @@ export default function FamilyHome(props) {
   });
   const [recentMessages, setRecentMessages] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [familyGroup, setFamilyGroup] = useState(null);
+  const [familyMembers, setFamilyMembers] = useState([]);
 
   // 获取家庭订单数据 — 直接查询 orders 数据模型
   const fetchOrders = async () => {
@@ -126,11 +128,106 @@ export default function FamilyHome(props) {
     }
   };
 
+  // 获取家庭组信息 — 查询 family_groups 数据模型
+  const fetchFamilyGroup = async () => {
+    try {
+      const result = await props.$w.cloud.callDataSource({
+        dataSourceName: 'family_groups',
+        methodName: 'wedaGetRecordsV2',
+        params: {
+          filter: {
+            where: {
+              $and: [{
+                status: {
+                  $eq: 'active'
+                }
+              }]
+            }
+          },
+          orderBy: [{
+            createdAt: 'desc'
+          }],
+          select: {
+            $master: true
+          },
+          getCount: true,
+          pageSize: 1,
+          pageNumber: 1
+        }
+      });
+      if (result && result.records && result.records.length > 0) {
+        const group = result.records[0];
+        setFamilyGroup({
+          id: group._id,
+          name: group.name,
+          description: group.description,
+          coverImage: group.coverImage,
+          maxMembers: group.maxMembers,
+          inviteCode: group.inviteCode
+        });
+        return group;
+      }
+    } catch (error) {
+      console.error('获取家庭组失败:', error);
+    }
+    return null;
+  };
+
+  // 获取家庭成员列表 — 查询 family_memberships 数据模型
+  const fetchFamilyMembers = async groupId => {
+    try {
+      const result = await props.$w.cloud.callDataSource({
+        dataSourceName: 'family_memberships',
+        methodName: 'wedaGetRecordsV2',
+        params: {
+          filter: {
+            where: {
+              $and: [{
+                familyGroupId: {
+                  $eq: groupId
+                }
+              }, {
+                status: {
+                  $eq: 'active'
+                }
+              }]
+            }
+          },
+          orderBy: [{
+            joinDate: 'asc'
+          }],
+          select: {
+            $master: true
+          },
+          getCount: true,
+          pageSize: 20,
+          pageNumber: 1
+        }
+      });
+      if (result && result.records) {
+        setFamilyMembers(result.records.map(m => ({
+          id: m._id,
+          nickname: m.nickname,
+          role: m.role,
+          permissions: m.permissions || [],
+          status: m.status
+        })));
+      }
+    } catch (error) {
+      console.error('获取家庭成员失败:', error);
+    }
+  };
+
   // 页面初始化加载数据
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
-      await Promise.all([fetchOrders(), fetchMessages()]);
+      const group = await fetchFamilyGroup();
+      const promises = [fetchOrders(), fetchMessages()];
+      if (group) {
+        promises.push(fetchFamilyMembers(group._id));
+      }
+      await Promise.all(promises);
       setLoading(false);
     };
     loadData();
@@ -155,26 +252,29 @@ export default function FamilyHome(props) {
   }
   return <div className="min-h-screen bg-gradient-to-br from-[#FCEEB8] via-[#FF8B4E] to-[#FF6B35] pb-20">
       <div className="max-w-6xl mx-auto p-6">
-        {/* 头部欢迎区 */}
+        {/* 头部欢迎区 + 家庭组信息 */}
         <div className="bg-white rounded-3xl shadow-xl p-6 mb-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-16 h-16 bg-gradient-to-br from-[#FF8B4E] to-[#FF6B35] rounded-full flex items-center justify-center shadow-lg">
-                <Heart className="h-8 w-8 text-white" />
-              </div>
+              {familyGroup && familyGroup.coverImage ? <img src={familyGroup.coverImage} alt={familyGroup.name} className="w-16 h-16 rounded-full object-cover shadow-lg" /> : <div className="w-16 h-16 bg-gradient-to-br from-[#FF8B4E] to-[#FF6B35] rounded-full flex items-center justify-center shadow-lg">
+                  <Heart className="h-8 w-8 text-white" />
+                </div>}
               <div>
                 <h1 className="text-2xl font-bold text-[#FF6B35]" style={{
                 fontFamily: 'Quicksand'
-              }}>{currentUser.nickName || currentUser.name || '亲爱的用户'}</h1>
+              }}>{familyGroup ? familyGroup.name : currentUser.nickName || currentUser.name || '亲爱的用户'}</h1>
                 <p className="text-base text-[#8B7355]" style={{
                 fontFamily: 'Nunito'
-              }}>欢迎回到温馨家庭</p>
+              }}>{familyGroup ? familyGroup.description : '欢迎回到温馨家庭'}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <Button className="bg-white text-[#8B7355] h-10 w-10 p-0 rounded-xl hover:bg-[#FCEEB8]" onClick={() => {
               setLoading(true);
-              Promise.all([fetchOrders(), fetchMessages()]).finally(() => setLoading(false));
+              const group = familyGroup;
+              const promises = [fetchOrders(), fetchMessages()];
+              if (group) promises.push(fetchFamilyMembers(group.id));
+              Promise.all(promises).finally(() => setLoading(false));
             }}>
                 <RefreshCw className="h-5 w-5" />
               </Button>
@@ -186,6 +286,13 @@ export default function FamilyHome(props) {
             }}>切换角色</Button>
             </div>
           </div>
+          {familyGroup && <div className="mt-4 flex items-center gap-4 text-sm text-[#8B7355]" style={{
+          fontFamily: 'Nunito'
+        }}>
+              <span>成员上限: {familyGroup.maxMembers || '不限'}</span>
+              <span>邀请码: <span className="font-bold text-[#FF6B35]">{familyGroup.inviteCode || '无'}</span></span>
+              <span>当前成员: {familyMembers.length}</span>
+            </div>}
         </div>
 
         {/* 今日统计 */}
@@ -272,6 +379,35 @@ export default function FamilyHome(props) {
             </Button>
           </div>
         </div>
+
+        {/* 家庭成员列表 */}
+        {familyMembers.length > 0 && <div className="bg-white rounded-3xl shadow-xl p-6 mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-[#FF6B35]" style={{
+            fontFamily: 'Quicksand'
+          }}>
+                <Users className="h-6 w-6 inline mr-2" />家庭成员
+              </h2>
+              <span className="text-sm text-[#8B7355]" style={{
+            fontFamily: 'Nunito'
+          }}>{familyMembers.length} 位成员</span>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              {familyMembers.map(member => <div key={member.id} className="flex items-center gap-2 bg-[#FCEEB8] rounded-xl px-3 py-2 shadow-sm">
+                  <div className="w-8 h-8 bg-[#FF8B4E] rounded-full flex items-center justify-center text-white text-sm font-bold" style={{
+              fontFamily: 'Quicksand'
+            }}>{member.nickname ? member.nickname.charAt(0) : '?'}</div>
+                  <div>
+                    <p className="text-sm font-semibold text-[#FF6B35]" style={{
+                fontFamily: 'Quicksand'
+              }}>{member.nickname || '未命名'}</p>
+                    <p className={`text-xs font-semibold ${member.role === 'chef' ? 'text-[#FF8B4E]' : 'text-[#9CCF4E]'}`} style={{
+                fontFamily: 'Nunito'
+              }}>{member.role === 'chef' ? '大厨' : '成员'}</p>
+                  </div>
+                </div>)}
+            </div>
+          </div>}
 
         {/* 最新订单 */}
         <div className="bg-white rounded-3xl shadow-xl p-6 mb-6">

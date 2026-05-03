@@ -1,0 +1,41 @@
+{
+  "name": "family_groups",
+  "title": "家庭组",
+  "schemas": [
+    {
+      "name": "name",
+      "title": "家庭名称",
+      "type": "String"
+    },
+    {
+      "name": "description",
+      "title": "描述",
+      "type": "MultiLineString"
+    },
+    {
+      "name": "coverImage",
+      "title": "封面图片",
+      "type": "Image"
+    },
+    {
+      "name": "status",
+      "title": "状态",
+      "type": "String"
+    },
+    {
+      "name": "maxMembers",
+      "title": "最大成员数",
+      "type": "Number"
+    },
+    {
+      "name": "inviteCode",
+      "title": "邀请码",
+      "type": "String"
+    },
+    {
+      "name": "createdByUserId",
+      "title": "创建人用户ID",
+      "type": "String"
+    }
+  ]
+}

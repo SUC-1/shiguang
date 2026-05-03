@@ -1,0 +1,17 @@
+[
+  {
+    "_id": "fg001",
+    "name": "温馨之家",
+    "description": "我们的温馨小家庭，一起分享美食和快乐",
+    "coverImage": "https://images.unsplash.com/photo-1604078573513-c1ae675c7b5c?w=800",
+    "status": "active",
+    "maxMembers": 10,
+    "inviteCode": "WARM2024",
+    "createdByUserId": "3",
+    "createdAt": 1715731200000,
+    "updatedAt": 1715731200000,
+    "owner": "user_003",
+    "createBy": "user_003",
+    "updateBy": "user_003"
+  }
+]

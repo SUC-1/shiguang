@@ -38,21 +38,35 @@ export default function FamilyMember(props) {
     });
   };
 
-  // 获取菜品数据 — 调用 manageDishes 云函数
+  // 获取菜品数据 — 直接查询 dishes 数据模型
   const fetchDishes = async () => {
     try {
-      const result = await props.$w.cloud.callFunction({
-        name: 'manageDishes',
-        data: {
-          action: 'query',
-          queryType: 'byBusinessType',
-          businessType: 'family',
-          page: 1,
-          pageSize: 50
+      const result = await props.$w.cloud.callDataSource({
+        dataSourceName: 'dishes',
+        methodName: 'wedaGetRecordsV2',
+        params: {
+          filter: {
+            where: {
+              $and: [{
+                businessType: {
+                  $eq: 'family'
+                }
+              }]
+            }
+          },
+          orderBy: [{
+            createdAt: 'desc'
+          }],
+          select: {
+            $master: true
+          },
+          getCount: true,
+          pageSize: 50,
+          pageNumber: 1
         }
       });
-      if (result.result && result.result.success) {
-        const fetched = (result.result.data && result.result.data.dishes || []).map(d => ({
+      if (result && result.records) {
+        const fetched = result.records.map(d => ({
           id: d._id,
           name: d.name,
           image: d.image,
@@ -72,7 +86,7 @@ export default function FamilyMember(props) {
         toast({
           variant: 'destructive',
           title: '获取菜品失败',
-          description: result.result && result.result.message || '请稍后重试'
+          description: '请稍后重试'
         });
       }
     } catch (error) {
@@ -84,27 +98,88 @@ export default function FamilyMember(props) {
     }
   };
 
-  // 获取家庭成员数据 — 调用 manageUsers 云函数
-  const fetchFamilyMembers = async () => {
+  // 获取家庭组信息 — 查询 family_groups 数据模型
+  const fetchFamilyGroup = async () => {
     try {
-      const result = await props.$w.cloud.callFunction({
-        name: 'manageUsers',
-        data: {
-          action: 'query',
-          queryType: 'byRole',
-          role: 'family_member',
-          page: 1,
-          pageSize: 20
+      const result = await props.$w.cloud.callDataSource({
+        dataSourceName: 'family_groups',
+        methodName: 'wedaGetRecordsV2',
+        params: {
+          filter: {
+            where: {
+              $and: [{
+                status: {
+                  $eq: 'active'
+                }
+              }]
+            }
+          },
+          orderBy: [{
+            createdAt: 'desc'
+          }],
+          select: {
+            $master: true
+          },
+          getCount: true,
+          pageSize: 1,
+          pageNumber: 1
         }
       });
-      if (result.result && result.result.success) {
-        const users = result.result.data && result.result.data.users || [];
-        setFamilyMembers(users.map(u => ({
-          id: u._id,
-          nickname: u.nickname,
-          avatar: u.avatar,
-          role: u.role,
-          isActive: u.isActive
+      if (result && result.records && result.records.length > 0) {
+        return result.records[0];
+      }
+    } catch (error) {
+      console.error('获取家庭组失败:', error);
+    }
+    return null;
+  };
+
+  // 获取家庭成员数据 — 查询 family_memberships 数据模型
+  const fetchFamilyMembers = async () => {
+    try {
+      // 先获取家庭组
+      const group = await fetchFamilyGroup();
+      if (!group) {
+        console.error('未找到活跃的家庭组');
+        return;
+      }
+      // 根据家庭组ID查询成员关系
+      const result = await props.$w.cloud.callDataSource({
+        dataSourceName: 'family_memberships',
+        methodName: 'wedaGetRecordsV2',
+        params: {
+          filter: {
+            where: {
+              $and: [{
+                familyGroupId: {
+                  $eq: group._id
+                }
+              }, {
+                status: {
+                  $eq: 'active'
+                }
+              }]
+            }
+          },
+          orderBy: [{
+            joinDate: 'asc'
+          }],
+          select: {
+            $master: true
+          },
+          getCount: true,
+          pageSize: 20,
+          pageNumber: 1
+        }
+      });
+      if (result && result.records) {
+        setFamilyMembers(result.records.map(m => ({
+          id: m._id,
+          nickname: m.nickname,
+          role: m.role,
+          permissions: m.permissions || [],
+          status: m.status,
+          familyGroupId: m.familyGroupId
         })));
       }
     } catch (error) {
@@ -157,7 +232,7 @@ export default function FamilyMember(props) {
       });
     }
   };
-  // 提交订单 — 调用 manageOrders 云函数
+  // 提交订单 — 直接创建 orders 数据模型记录
   const handleSubmitOrder = async () => {
     if (selectedDishes.length === 0) {
       toast({
@@ -175,19 +250,23 @@ export default function FamilyMember(props) {
         price: d.price || 0
       }));
       const total = orderDishes.reduce((sum, d) => sum + d.price * d.quantity, 0);
-      const result = await props.$w.cloud.callFunction({
-        name: 'manageOrders',
-        data: {
-          action: 'create',
-          userName: currentUser.nickName || currentUser.name || '家庭成员',
-          dishes: orderDishes,
-          message: message || '',
-          boardColor: boardColor,
-          businessType: 'family',
-          syncTarget: syncTarget
+      const result = await props.$w.cloud.callDataSource({
+        dataSourceName: 'orders',
+        methodName: 'wedaCreateV2',
+        params: {
+          data: {
+            userName: currentUser.nickName || currentUser.name || '家庭成员',
+            dishes: orderDishes,
+            message: message || '',
+            boardColor: boardColor,
+            status: 'pending',
+            total: total,
+            businessType: 'family',
+            syncTarget: syncTarget
+          }
         }
       });
-      if (result.result && result.result.success) {
+      if (result && result.id) {
         toast({
           variant: 'default',
           title: '订单提交成功',
@@ -199,7 +278,7 @@ export default function FamilyMember(props) {
         toast({
           variant: 'destructive',
           title: '订单提交失败',
-          description: result.result && result.result.message || '请重试'
+          description: '请重试'
         });
       }
     } catch (error) {
@@ -267,19 +346,19 @@ export default function FamilyMember(props) {
               <Users className="h-10 w-10 mx-auto mb-2 text-[#FF8B4E]" />
               <p className="text-sm text-[#8B7355]" style={{
             fontFamily: 'Nunito'
-          }}>暂无注册家庭成员</p>
+          }}>暂无家庭成员</p>
             </div> : <div className="flex items-center gap-3 flex-wrap">
               {familyMembers.map(member => <div key={member.id} className="flex items-center gap-2 bg-[#FCEEB8] rounded-xl px-3 py-2 shadow-sm hover:shadow-md transition-shadow">
-                  {member.avatar ? <img src={member.avatar} alt={member.nickname} className="w-8 h-8 rounded-full object-cover" /> : <div className="w-8 h-8 bg-[#FF8B4E] rounded-full flex items-center justify-center text-white text-sm font-bold" style={{
+                  <div className="w-8 h-8 bg-[#FF8B4E] rounded-full flex items-center justify-center text-white text-sm font-bold" style={{
               fontFamily: 'Quicksand'
-            }}>{member.nickname ? member.nickname.charAt(0) : '?'}</div>}
+            }}>{member.nickname ? member.nickname.charAt(0) : '?'}</div>
                   <div>
                     <p className="text-sm font-semibold text-[#FF6B35]" style={{
                 fontFamily: 'Quicksand'
               }}>{member.nickname || '未命名'}</p>
-                    <p className={`text-xs font-semibold ${member.isActive ? 'text-[#9CCF4E]' : 'text-[#E85A42]'}`} style={{
+                    <p className={`text-xs font-semibold ${member.role === 'chef' ? 'text-[#FF8B4E]' : 'text-[#9CCF4E]'}`} style={{
                 fontFamily: 'Nunito'
-              }}>{member.isActive ? '在线' : '离线'}</p>
+              }}>{member.role === 'chef' ? '大厨' : '成员'} · {member.status === 'active' ? '活跃' : '离线'}</p>
                   </div>
                 </div>)}
             </div>}
