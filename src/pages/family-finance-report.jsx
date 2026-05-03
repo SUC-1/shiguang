@@ -1,5 +1,5 @@
 // @ts-ignore;
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 // @ts-ignore;
 import { Button } from '@/components/ui';
 // @ts-ignore;
@@ -7,123 +7,222 @@ import { TrendingUp, TrendingDown, PieChart, BarChart3, Calendar, Users, Wallet,
 
 import { PieChart as RechartsPie, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, LineChart, Line, CartesianGrid } from 'recharts';
 
-// 模拟数据
-const mockMonthlyData = [{
-  month: '1月',
-  income: 8500,
-  expense: 6200
-}, {
-  month: '2月',
-  income: 9200,
-  expense: 5800
-}, {
-  month: '3月',
-  income: 8800,
-  expense: 7100
-}, {
-  month: '4月',
-  income: 9500,
-  expense: 6500
-}, {
-  month: '5月',
-  income: 9000,
-  expense: 6800
-}];
-const mockCategoryData = [{
-  name: '餐饮',
-  value: 1850,
-  color: '#FF8B4E'
-}, {
-  name: '房租',
-  value: 5000,
-  color: '#6366F1'
-}, {
-  name: '教育',
-  value: 800,
-  color: '#9CCF4E'
-}, {
-  name: '交通',
-  value: 650,
-  color: '#E94560'
-}, {
-  name: '购物',
-  value: 980,
-  color: '#EC4899'
-}, {
-  name: '娱乐',
-  value: 320,
-  color: '#F59E0B'
-}];
-const mockMemberData = [{
-  name: '爸爸',
-  income: 5500,
-  expense: 2100,
-  avatar: '👨'
-}, {
-  name: '妈妈',
-  income: 3500,
-  expense: 3200,
-  avatar: '👩'
-}, {
-  name: '宝宝',
-  income: 0,
-  expense: 1500,
-  avatar: '👶'
-}, {
-  name: '爷爷',
-  income: 500,
-  expense: 0,
-  avatar: '👴'
-}];
-const mockRecentTransactions = [{
-  id: '1',
-  type: 'expense',
-  category: '餐饮',
-  amount: 1200,
-  date: '2026-05-02',
-  member: '妈妈'
-}, {
-  id: '2',
-  type: 'income',
-  category: '工资',
-  amount: 5000,
-  date: '2026-05-01',
-  member: '爸爸'
-}, {
-  id: '3',
-  type: 'expense',
-  category: '教育',
-  amount: 800,
-  date: '2026-05-03',
-  member: '爸爸'
-}, {
-  id: '4',
-  type: 'expense',
-  category: '房租',
-  amount: 2000,
-  date: '2026-05-01',
-  member: '妈妈'
-}, {
-  id: '5',
-  type: 'income',
-  category: '理财',
-  amount: 300,
-  date: '2026-05-03',
-  member: '妈妈'
-}];
+// 成员映射
+const memberMap = {
+  'u001': {
+    name: '爸爸',
+    avatar: '👨'
+  },
+  'u002': {
+    name: '妈妈',
+    avatar: '👩'
+  },
+  'u003': {
+    name: '爷爷',
+    avatar: '👴'
+  },
+  'u004': {
+    name: '奶奶',
+    avatar: '👵'
+  },
+  'u005': {
+    name: '宝宝',
+    avatar: '👶'
+  }
+};
+
+// 分类颜色
+const categoryColors = {
+  '餐饮': '#FF8B4E',
+  '房租': '#6366F1',
+  '教育': '#9CCF4E',
+  '交通': '#E94560',
+  '购物': '#EC4899',
+  '娱乐': '#F59E0B',
+  '医疗': '#14B8A6',
+  '通讯': '#8B5CF6',
+  '工资': '#9CCF4E',
+  '奖金': '#9CCF4E',
+  '理财': '#9CCF4E',
+  '红包': '#9CCF4E',
+  '兼职': '#9CCF4E',
+  '其他收入': '#9CCF4E',
+  '其他支出': '#6B7280'
+};
 export default function FamilyFinanceReport(props) {
   const {
     navigateTo
   } = props.$w.utils;
+  const currentUser = props.$w.auth.currentUser;
   const [timeRange, setTimeRange] = useState('month');
   const [chartType, setChartType] = useState('bar');
+  const [loading, setLoading] = useState(true);
+  const [records, setRecords] = useState([]);
+  const [familyGroupId, setFamilyGroupId] = useState(null);
+  const [familyMembers, setFamilyMembers] = useState({});
+
+  // 获取当前用户的家庭组
+  const fetchFamilyGroup = async () => {
+    try {
+      const db = props.$w.database;
+      const userId = currentUser?.userId || currentUser?._id;
+      if (!userId) return null;
+      const memberResult = await db.collection('family_memberships').where({
+        user_id: userId,
+        status: 'active'
+      }).get();
+      if (memberResult.data && memberResult.data.length > 0) {
+        const membership = memberResult.data[0];
+        setFamilyGroupId(membership.family_id);
+
+        // 获取家庭成员列表
+        const membersResult = await db.collection('family_memberships').where({
+          family_id: membership.family_id,
+          status: 'active'
+        }).get();
+        const memberMap = {};
+        membersResult.data?.forEach(m => {
+          memberMap[m.user_id] = {
+            name: m.nick_name || m.name || '家庭成员',
+            avatar: m.avatar_url || '👤'
+          };
+        });
+        setFamilyMembers(memberMap);
+        return membership.family_id;
+      }
+      return null;
+    } catch (error) {
+      console.error('获取家庭组失败:', error);
+      return null;
+    }
+  };
+
+  // 加载数据
+  useEffect(() => {
+    const initData = async () => {
+      const groupId = await fetchFamilyGroup();
+      if (groupId) {
+        loadData(groupId);
+      } else {
+        setLoading(false);
+      }
+    };
+    initData();
+  }, []);
+  useEffect(() => {
+    if (familyGroupId) {
+      loadData(familyGroupId);
+    }
+  }, [timeRange, familyGroupId]);
+  const loadData = async groupId => {
+    if (!groupId) return;
+    try {
+      setLoading(true);
+      const db = props.$w.database;
+
+      // 根据时间范围筛选数据
+      const now = new Date();
+      let startDate = '';
+      if (timeRange === 'week') {
+        const weekStart = new Date(now);
+        weekStart.setDate(now.getDate() - now.getDay());
+        startDate = weekStart.toISOString().split('T')[0];
+      } else if (timeRange === 'month') {
+        startDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+      } else {
+        startDate = `${now.getFullYear()}-01-01`;
+      }
+      const result = await db.collection('family_finance_records').where({
+        family_id: groupId,
+        date: db.command.gte(startDate)
+      }).orderBy('date', 'desc').get();
+
+      // 转换数据格式
+      const formattedRecords = result.data.map(record => ({
+        id: record._id,
+        type: record.type,
+        category: record.category,
+        amount: record.amount,
+        date: record.date,
+        member: familyMembers[record.member_id]?.name || familyMembers[record.user_id]?.name || '未知',
+        member_id: record.member_id || record.user_id
+      }));
+      setRecords(formattedRecords);
+    } catch (error) {
+      console.error('加载财务数据失败:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // 计算统计数据
-  const totalIncome = mockMonthlyData.reduce((sum, m) => sum + m.income, 0);
-  const totalExpense = mockMonthlyData.reduce((sum, m) => sum + m.expense, 0);
+  const totalIncome = records.filter(r => r.type === 'income').reduce((sum, r) => sum + r.amount, 0);
+  const totalExpense = records.filter(r => r.type === 'expense').reduce((sum, r) => sum + r.amount, 0);
   const balance = totalIncome - totalExpense;
-  const avgIncome = totalIncome / mockMonthlyData.length;
-  const avgExpense = totalExpense / mockMonthlyData.length;
+  const avgIncome = records.length > 0 ? totalIncome / Math.max(1, records.filter(r => r.type === 'income').length) : 0;
+  const avgExpense = records.length > 0 ? totalExpense / Math.max(1, records.filter(r => r.type === 'expense').length) : 0;
+
+  // 按月统计数据
+  const monthlyData = (() => {
+    const months = {};
+    records.forEach(record => {
+      const month = record.date.substring(0, 7);
+      if (!months[month]) {
+        months[month] = {
+          month: month + '月',
+          income: 0,
+          expense: 0
+        };
+      }
+      if (record.type === 'income') {
+        months[month].income += record.amount;
+      } else {
+        months[month].expense += record.amount;
+      }
+    });
+    return Object.values(months).sort((a, b) => a.month.localeCompare(b.month));
+  })();
+
+  // 按分类统计数据
+  const categoryData = (() => {
+    const categories = {};
+    records.filter(r => r.type === 'expense').forEach(record => {
+      if (!categories[record.category]) {
+        categories[record.category] = {
+          name: record.category,
+          value: 0,
+          color: categoryColors[record.category] || '#6B7280'
+        };
+      }
+      categories[record.category].value += record.amount;
+    });
+    return Object.values(categories).sort((a, b) => b.value - a.value);
+  })();
+
+  // 按成员统计数据
+  const memberData = (() => {
+    const members = {};
+    records.forEach(record => {
+      const memberName = record.member;
+      if (!members[memberName]) {
+        members[memberName] = {
+          name: memberName,
+          income: 0,
+          expense: 0,
+          avatar: familyMembers[record.member_id]?.avatar || '👤'
+        };
+      }
+      if (record.type === 'income') {
+        members[memberName].income += record.amount;
+      } else {
+        members[memberName].expense += record.amount;
+      }
+    });
+    return Object.values(members);
+  })();
+
+  // 最近交易记录
+  const recentTransactions = records.slice(0, 5);
 
   // 格式化金额
   const formatAmount = amount => {
@@ -229,7 +328,7 @@ export default function FamilyFinanceReport(props) {
           
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
-              {chartType === 'bar' ? <BarChart data={mockMonthlyData}>
+              {chartType === 'bar' ? <BarChart data={monthlyData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#2A2A4E" />
                   <XAxis dataKey="month" stroke="#666" fontSize={12} />
                   <YAxis stroke="#666" fontSize={12} tickFormatter={v => `${v / 1000}k`} />
@@ -237,7 +336,7 @@ export default function FamilyFinanceReport(props) {
                   <Legend />
                   <Bar dataKey="income" name="收入" fill="#9CCF4E" radius={[4, 4, 0, 0]} />
                   <Bar dataKey="expense" name="支出" fill="#E85A42" radius={[4, 4, 0, 0]} />
-                </BarChart> : <LineChart data={mockMonthlyData}>
+                </BarChart> : <LineChart data={monthlyData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#2A2A4E" />
                   <XAxis dataKey="month" stroke="#666" fontSize={12} />
                   <YAxis stroke="#666" fontSize={12} tickFormatter={v => `${v / 1000}k`} />
@@ -265,8 +364,8 @@ export default function FamilyFinanceReport(props) {
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <RechartsPie>
-                <Pie data={mockCategoryData} cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={2} dataKey="value">
-                  {mockCategoryData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
+                <Pie data={categoryData} cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={2} dataKey="value">
+                  {categoryData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
                 </Pie>
                 <Tooltip content={<CustomTooltip />} />
               </RechartsPie>
@@ -275,7 +374,7 @@ export default function FamilyFinanceReport(props) {
 
           {/* 图例 */}
           <div className="grid grid-cols-2 gap-2 mt-4">
-            {mockCategoryData.map((item, index) => <div key={index} className="flex items-center gap-2 text-sm">
+            {categoryData.map((item, index) => <div key={index} className="flex items-center gap-2 text-sm">
                 <div className="w-3 h-3 rounded-full" style={{
               backgroundColor: item.color
             }} />
@@ -295,7 +394,7 @@ export default function FamilyFinanceReport(props) {
           </h3>
           
           <div className="space-y-3">
-            {mockMemberData.map((member, index) => <div key={index} className="flex items-center gap-4 p-3 bg-[#0F0F1A] rounded-xl">
+            {memberData.map((member, index) => <div key={index} className="flex items-center gap-4 p-3 bg-[#0F0F1A] rounded-xl">
                 <span className="text-2xl">{member.avatar}</span>
                 <div className="flex-1">
                   <p className="font-semibold text-white">{member.name}</p>
@@ -322,7 +421,7 @@ export default function FamilyFinanceReport(props) {
           </h3>
           
           <div className="space-y-2">
-            {mockRecentTransactions.map(tx => <div key={tx.id} className="flex items-center gap-3 p-3 bg-[#0F0F1A] rounded-xl">
+            {recentTransactions.map(tx => <div key={tx.id} className="flex items-center gap-3 p-3 bg-[#0F0F1A] rounded-xl">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center ${tx.type === 'income' ? 'bg-[#9CCF4E]/20' : 'bg-[#E85A42]/20'}`}>
                   {tx.type === 'income' ? <ArrowUpRight className="h-4 w-4 text-[#9CCF4E]" /> : <ArrowDownRight className="h-4 w-4 text-[#E85A42]" />}
                 </div>

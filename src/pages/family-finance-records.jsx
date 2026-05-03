@@ -5,85 +5,19 @@ import { Button, Input, Textarea, Select, SelectContent, SelectItem, SelectTrigg
 // @ts-ignore;
 import { Calendar, TrendingUp, TrendingDown, Plus, Filter, Search, ArrowUpRight, ArrowDownRight, Wallet, PiggyBank, X, DollarSign } from 'lucide-react';
 
-// 模拟数据
-const mockRecords = [{
-  id: '1',
-  type: 'income',
-  amount: 5000,
-  category: '工资',
-  date: '2026-05-01',
-  notes: '月工资',
-  member: '爸爸',
-  createdAt: '2026-05-01T10:00:00'
-}, {
-  id: '2',
-  type: 'expense',
-  amount: 1200,
-  category: '餐饮',
-  date: '2026-05-02',
-  notes: '家庭聚餐',
-  member: '妈妈',
-  createdAt: '2026-05-02T18:30:00'
-}, {
-  id: '3',
-  type: 'expense',
-  amount: 800,
-  category: '教育',
-  date: '2026-05-03',
-  notes: '兴趣班费用',
-  member: '爸爸',
-  createdAt: '2026-05-03T15:20:00'
-}, {
-  id: '4',
-  type: 'income',
-  amount: 300,
-  category: '理财',
-  date: '2026-05-03',
-  notes: '理财收益',
-  member: '妈妈',
-  createdAt: '2026-05-03T09:00:00'
-}, {
-  id: '5',
-  type: 'expense',
-  amount: 450,
-  category: '交通',
-  date: '2026-05-01',
-  notes: '油费',
-  member: '爸爸',
-  createdAt: '2026-05-01T14:00:00'
-}, {
-  id: '6',
-  type: 'expense',
-  amount: 2000,
-  category: '房租',
-  date: '2026-05-01',
-  notes: '月租',
-  member: '妈妈',
-  createdAt: '2026-05-01T08:00:00'
-}, {
-  id: '7',
-  type: 'income',
-  amount: 500,
-  category: '红包',
-  date: '2026-04-30',
-  notes: '生日红包',
-  member: '爷爷',
-  createdAt: '2026-04-30T20:00:00'
-}, {
-  id: '8',
-  type: 'expense',
-  amount: 350,
-  category: '医疗',
-  date: '2026-04-28',
-  notes: '感冒药',
-  member: '宝宝',
-  createdAt: '2026-04-28T11:00:00'
-}];
+// 成员映射
+const memberMap = {
+  'u001': '爸爸',
+  'u002': '妈妈',
+  'u003': '爷爷',
+  'u004': '奶奶',
+  'u005': '宝宝'
+};
 const categories = {
   income: ['工资', '奖金', '理财', '红包', '兼职', '其他收入'],
   expense: ['餐饮', '交通', '教育', '房租', '医疗', '购物', '娱乐', '通讯', '其他支出']
 };
-const members = ['爸爸', '妈妈', '爷爷', '奶奶', '宝宝'];
+// 动态获取成员列表
 export default function FamilyFinanceRecords(props) {
   const {
     toast
@@ -94,8 +28,89 @@ export default function FamilyFinanceRecords(props) {
     page
   } = props.$w.utils;
   const currentUser = props.$w.auth.currentUser;
-  const [records, setRecords] = useState(mockRecords);
-  const [loading, setLoading] = useState(false);
+  const [records, setRecords] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [familyGroupId, setFamilyGroupId] = useState(null);
+  const [familyMembers, setFamilyMembers] = useState({});
+
+  // 获取当前用户的家庭组
+  const fetchFamilyGroup = async () => {
+    try {
+      const db = props.$w.database;
+      const userId = currentUser?.userId || currentUser?._id;
+      if (!userId) return null;
+      const memberResult = await db.collection('family_memberships').where({
+        user_id: userId,
+        status: 'active'
+      }).get();
+      if (memberResult.data && memberResult.data.length > 0) {
+        const membership = memberResult.data[0];
+        setFamilyGroupId(membership.family_id);
+
+        // 获取家庭成员列表
+        const membersResult = await db.collection('family_memberships').where({
+          family_id: membership.family_id,
+          status: 'active'
+        }).get();
+        const memberMap = {};
+        membersResult.data?.forEach(m => {
+          memberMap[m.user_id] = m.nick_name || m.name || '家庭成员';
+        });
+        setFamilyMembers(memberMap);
+        return membership.family_id;
+      }
+      return null;
+    } catch (error) {
+      console.error('获取家庭组失败:', error);
+      return null;
+    }
+  };
+
+  // 加载数据
+  useEffect(() => {
+    const initData = async () => {
+      const groupId = await fetchFamilyGroup();
+      if (groupId) {
+        loadRecords(groupId);
+      } else {
+        setLoading(false);
+      }
+    };
+    initData();
+  }, []);
+  const loadRecords = async groupId => {
+    if (!groupId) return;
+    try {
+      setLoading(true);
+      const db = props.$w.database;
+      const result = await db.collection('family_finance_records').where({
+        family_id: groupId
+      }).orderBy('date', 'desc').get();
+
+      // 转换数据格式以适配页面显示
+      const formattedRecords = result.data.map(record => ({
+        id: record._id,
+        type: record.type,
+        amount: record.amount,
+        category: record.category,
+        date: record.date,
+        notes: record.description || '',
+        member: familyMembers[record.member_id] || familyMembers[record.user_id] || '未知',
+        member_id: record.member_id || record.user_id,
+        createdAt: record.created_at ? new Date(record.created_at).toISOString() : new Date().toISOString()
+      }));
+      setRecords(formattedRecords);
+    } catch (error) {
+      console.error('加载财务记录失败:', error);
+      toast({
+        variant: 'destructive',
+        title: '加载失败',
+        description: '无法获取财务记录'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
@@ -135,25 +150,41 @@ export default function FamilyFinanceRecords(props) {
     }
     setLoading(true);
     try {
-      // 模拟API调用
-      await new Promise(resolve => setTimeout(resolve, 500));
-      const newRecord = {
-        id: editingRecord?.id || Date.now().toString(),
-        ...formData,
+      const db = props.$w.database;
+      // 获取用户ID映射
+      const userIdMap = {};
+      Object.entries(familyMembers).forEach(([uid, name]) => {
+        userIdMap[name] = uid;
+      });
+      const recordData = {
+        family_id: familyGroupId,
+        type: formData.type,
         amount: parseFloat(formData.amount),
-        createdAt: editingRecord?.createdAt || new Date().toISOString()
+        category: formData.category,
+        date: formData.date,
+        description: formData.notes,
+        user_id: userIdMap[formData.member] || currentUser?.userId || currentUser?._id,
+        created_at: Date.now()
       };
       if (editingRecord) {
-        setRecords(records.map(r => r.id === editingRecord.id ? newRecord : r));
+        // 更新记录
+        await db.collection('family_finance_records').doc(editingRecord.id).update({
+          ...recordData,
+          updated_at: Date.now()
+        });
         toast({
           title: '记录已更新'
         });
       } else {
-        setRecords([newRecord, ...records]);
+        // 添加记录
+        await db.collection('family_finance_records').add(recordData);
         toast({
           title: '记录已添加'
         });
       }
+
+      // 重新加载数据
+      await loadRecords();
       setIsAddDialogOpen(false);
       setEditingRecord(null);
       setFormData({
@@ -176,11 +207,21 @@ export default function FamilyFinanceRecords(props) {
   };
 
   // 删除记录
-  const handleDelete = id => {
-    setRecords(records.filter(r => r.id !== id));
-    toast({
-      title: '记录已删除'
-    });
+  const handleDelete = async id => {
+    try {
+      const db = props.$w.database;
+      await db.collection('family_finance_records').doc(id).delete();
+      setRecords(records.filter(r => r.id !== id));
+      toast({
+        title: '记录已删除'
+      });
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: '删除失败',
+        description: error.message
+      });
+    }
   };
 
   // 打开编辑对话框
@@ -391,7 +432,8 @@ export default function FamilyFinanceRecords(props) {
                 <SelectValue placeholder="选择成员" />
               </SelectTrigger>
               <SelectContent className="bg-[#1A1A2E] border-[#2A2A4E]">
-                {members.map(member => <SelectItem key={member} value={member} className="text-white">{member}</SelectItem>)}
+                {Object.values(familyMembers).map(member => <SelectItem key={member} value={member} className="text-white">{member}</SelectItem>)}
+                {Object.keys(familyMembers).length === 0 && <SelectItem value={currentUser?.nickName || currentUser?.name || '我'} className="text-white">{currentUser?.nickName || currentUser?.name || '我'}</SelectItem>}
               </SelectContent>
             </Select>
 

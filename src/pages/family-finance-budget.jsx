@@ -1,61 +1,19 @@
 // @ts-ignore;
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 // @ts-ignore;
 import { Button, Input, Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription, useToast } from '@/components/ui';
 // @ts-ignore;
 import { PiggyBank, Plus, Edit2, Trash2, TrendingUp, TrendingDown, Target, Users, X, DollarSign, Calendar } from 'lucide-react';
 
-// 模拟预算数据
-const mockBudgets = [{
-  id: '1',
-  category: '餐饮',
-  member: '全家',
-  amount: 3000,
-  spent: 1850,
-  period: 'monthly',
-  color: '#FF8B4E'
-}, {
-  id: '2',
-  category: '教育',
-  member: '宝宝',
-  amount: 2000,
-  spent: 800,
-  period: 'monthly',
-  color: '#9CCF4E'
-}, {
-  id: '3',
-  category: '交通',
-  member: '爸爸',
-  amount: 1000,
-  spent: 650,
-  period: 'monthly',
-  color: '#E94560'
-}, {
-  id: '4',
-  category: '房租',
-  member: '全家',
-  amount: 5000,
-  spent: 5000,
-  period: 'monthly',
-  color: '#6366F1'
-}, {
-  id: '5',
-  category: '娱乐',
-  member: '全家',
-  amount: 800,
-  spent: 320,
-  period: 'monthly',
-  color: '#F59E0B'
-}, {
-  id: '6',
-  category: '购物',
-  member: '妈妈',
-  amount: 1500,
-  spent: 980,
-  period: 'monthly',
-  color: '#EC4899'
-}];
-const members = ['全家', '爸爸', '妈妈', '宝宝', '爷爷', '奶奶'];
+// 成员映射
+const memberMap = {
+  'u001': '爸爸',
+  'u002': '妈妈',
+  'u003': '爷爷',
+  'u004': '奶奶',
+  'u005': '宝宝'
+};
+const members = ['爸爸', '妈妈', '爷爷', '奶奶', '宝宝'];
 const categories = ['餐饮', '教育', '交通', '房租', '娱乐', '购物', '医疗', '通讯', '其他'];
 export default function FamilyFinanceBudget(props) {
   const {
@@ -64,8 +22,110 @@ export default function FamilyFinanceBudget(props) {
   const {
     navigateTo
   } = props.$w.utils;
-  const [budgets, setBudgets] = useState(mockBudgets);
-  const [loading, setLoading] = useState(false);
+  const currentUser = props.$w.auth.currentUser;
+  const [budgets, setBudgets] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [spentMap, setSpentMap] = useState({});
+  const [familyGroupId, setFamilyGroupId] = useState(null);
+  const [familyMembers, setFamilyMembers] = useState({});
+
+  // 获取当前用户的家庭组
+  const fetchFamilyGroup = async () => {
+    try {
+      const db = props.$w.database;
+      const userId = currentUser?.userId || currentUser?._id;
+      if (!userId) return null;
+      const memberResult = await db.collection('family_memberships').where({
+        user_id: userId,
+        status: 'active'
+      }).get();
+      if (memberResult.data && memberResult.data.length > 0) {
+        const membership = memberResult.data[0];
+        setFamilyGroupId(membership.family_id);
+
+        // 获取家庭成员列表
+        const membersResult = await db.collection('family_memberships').where({
+          family_id: membership.family_id,
+          status: 'active'
+        }).get();
+        const memberMap = {};
+        membersResult.data?.forEach(m => {
+          memberMap[m.user_id] = m.nick_name || m.name || '家庭成员';
+        });
+        setFamilyMembers(memberMap);
+        return membership.family_id;
+      }
+      return null;
+    } catch (error) {
+      console.error('获取家庭组失败:', error);
+      return null;
+    }
+  };
+
+  // 加载数据
+  useEffect(() => {
+    const initData = async () => {
+      const groupId = await fetchFamilyGroup();
+      if (groupId) {
+        loadBudgets(groupId);
+      } else {
+        setLoading(false);
+      }
+    };
+    initData();
+  }, []);
+  const loadBudgets = async groupId => {
+    if (!groupId) return;
+    try {
+      setLoading(true);
+      const db = props.$w.database;
+
+      // 加载预算数据
+      const budgetResult = await db.collection('family_finance_budgets').where({
+        family_id: groupId
+      }).get();
+
+      // 加载支出记录计算已使用金额
+      const recordsResult = await db.collection('family_finance_records').where({
+        family_id: groupId,
+        type: 'expense'
+      }).get();
+
+      // 按分类统计支出
+      const spent = {};
+      recordsResult.data?.forEach(record => {
+        if (!spent[record.category]) {
+          spent[record.category] = 0;
+        }
+        spent[record.category] += record.amount;
+      });
+      setSpentMap(spent);
+
+      // 转换数据格式
+      const formattedBudgets = budgetResult.data.map(budget => ({
+        id: budget._id,
+        category: budget.category,
+        member: familyMembers[budget.member_id] || familyMembers[budget.user_id] || '未知',
+        member_id: budget.member_id || budget.user_id,
+        amount: budget.amount,
+        spent: spent[budget.category] || 0,
+        period: budget.period,
+        color: budget.color,
+        start_date: budget.start_date,
+        end_date: budget.end_date
+      }));
+      setBudgets(formattedBudgets);
+    } catch (error) {
+      console.error('加载预算失败:', error);
+      toast({
+        variant: 'destructive',
+        title: '加载失败',
+        description: '无法获取预算数据'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingBudget, setEditingBudget] = useState(null);
   const [formData, setFormData] = useState({
@@ -93,26 +153,46 @@ export default function FamilyFinanceBudget(props) {
     }
     setLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 500));
+      const db = props.$w.database;
+      // 获取用户ID映射
+      const userIdMap = {};
+      Object.entries(familyMembers).forEach(([uid, name]) => {
+        userIdMap[name] = uid;
+      });
       const colors = ['#FF8B4E', '#9CCF4E', '#E94560', '#6366F1', '#F59E0B', '#EC4899'];
-      const newBudget = {
-        id: editingBudget?.id || Date.now().toString(),
-        ...formData,
+      const now = new Date();
+      const startDate = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+      const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+      const budgetData = {
+        family_id: familyGroupId,
+        category: formData.category,
+        user_id: userIdMap[formData.member] || currentUser?.userId || currentUser?._id,
         amount: parseFloat(formData.amount),
-        spent: editingBudget?.spent || 0,
-        color: editingBudget?.color || colors[Math.floor(Math.random() * colors.length)]
+        period: formData.period,
+        start_date: startDate,
+        end_date: endDate,
+        color: editingBudget?.color || colors[Math.floor(Math.random() * colors.length)],
+        created_at: Date.now()
       };
       if (editingBudget) {
-        setBudgets(budgets.map(b => b.id === editingBudget.id ? newBudget : b));
+        // 更新预算
+        await db.collection('family_finance_budgets').doc(editingBudget.id).update({
+          ...budgetData,
+          updated_at: Date.now()
+        });
         toast({
           title: '预算已更新'
         });
       } else {
-        setBudgets([...budgets, newBudget]);
+        // 添加预算
+        await db.collection('family_finance_budgets').add(budgetData);
         toast({
           title: '预算已添加'
         });
       }
+
+      // 重新加载数据
+      await loadBudgets();
       setIsAddDialogOpen(false);
       setEditingBudget(null);
       setFormData({
@@ -133,11 +213,21 @@ export default function FamilyFinanceBudget(props) {
   };
 
   // 删除预算
-  const handleDelete = id => {
-    setBudgets(budgets.filter(b => b.id !== id));
-    toast({
-      title: '预算已删除'
-    });
+  const handleDelete = async id => {
+    try {
+      const db = props.$w.database;
+      await db.collection('family_finance_budgets').doc(id).delete();
+      setBudgets(budgets.filter(b => b.id !== id));
+      toast({
+        title: '预算已删除'
+      });
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: '删除失败',
+        description: error.message
+      });
+    }
   };
 
   // 打开编辑对话框
@@ -314,12 +404,17 @@ export default function FamilyFinanceBudget(props) {
 
             {/* 成员选择 */}
             <div className="grid grid-cols-3 gap-2">
-              {members.map(member => <Button key={member} variant={formData.member === member ? 'default' : 'outline'} size="sm" onClick={() => setFormData({
+              {Object.values(familyMembers).length > 0 ? Object.values(familyMembers).map(member => <Button key={member} variant={formData.member === member ? 'default' : 'outline'} size="sm" onClick={() => setFormData({
               ...formData,
               member: member
             })} className={formData.member === member ? 'bg-[#9CCF4E] text-white' : 'border-[#2A2A4E] text-gray-400 hover:bg-[#2A2A4E]'}>
                   {member}
-                </Button>)}
+                </Button>) : <Button variant="outline" size="sm" onClick={() => setFormData({
+              ...formData,
+              member: currentUser?.nickName || currentUser?.name || '我'
+            })} className="border-[#2A2A4E] text-gray-400 hover:bg-[#2A2A4E]">
+                  {currentUser?.nickName || currentUser?.name || '我'}
+                </Button>}
             </div>
 
             {/* 金额 */}
