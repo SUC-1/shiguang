@@ -29,6 +29,8 @@ export default function FamilyMember(props) {
   const [menuData, setMenuData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [familyMembers, setFamilyMembers] = useState([]);
+  const [membersLoading, setMembersLoading] = useState(true);
   const handleAICopywriting = () => {
     navigateTo({
       pageId: 'ai-copywriting',
@@ -82,12 +84,42 @@ export default function FamilyMember(props) {
     }
   };
 
+  // 获取家庭成员数据 — 调用 manageUsers 云函数
+  const fetchFamilyMembers = async () => {
+    try {
+      const result = await props.$w.cloud.callFunction({
+        name: 'manageUsers',
+        data: {
+          action: 'query',
+          queryType: 'byRole',
+          role: 'family_member',
+          page: 1,
+          pageSize: 20
+        }
+      });
+      if (result.result && result.result.success) {
+        const users = result.result.data && result.result.data.users || [];
+        setFamilyMembers(users.map(u => ({
+          id: u._id,
+          nickname: u.nickname,
+          avatar: u.avatar,
+          role: u.role,
+          isActive: u.isActive
+        })));
+      }
+    } catch (error) {
+      console.error('获取家庭成员失败:', error);
+    }
+  };
+
   // 页面初始化加载数据
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
-      await fetchDishes();
+      setMembersLoading(true);
+      await Promise.all([fetchDishes(), fetchFamilyMembers()]);
       setLoading(false);
+      setMembersLoading(false);
     };
     loadData();
   }, []);
@@ -202,29 +234,55 @@ export default function FamilyMember(props) {
               <Heart className="h-10 w-10 text-[#FF8B4E]" />
               <h1 className="text-2xl font-bold text-[#FF6B35]" style={{
               fontFamily: 'Quicksand'
-            }}>
-                温馨家庭 - 点菜
-              </h1>
+            }}>温馨家庭 - 点菜</h1>
             </div>
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2 text-sm text-[#8B7355]" style={{
-              fontFamily: 'Nunito'
-            }}>
-                <Users className="h-4 w-4" />
-                <span>{currentUser.nickName || currentUser.name || '家庭成员'}</span>
-              </div>
               <ShoppingCart className="h-6 w-6 text-[#FF8B4E]" />
               <span className="text-lg font-semibold text-[#FF6B35]" style={{
               fontFamily: 'Quicksand'
-            }}>
-                已选: {selectedDishes.length}
-              </span>
+            }}>已选: {selectedDishes.length}</span>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <Search className="h-5 w-5 text-[#FF8B4E]" />
             <Input className="flex-1 bg-[#FCEEB8] border-2 border-[#FF8B4E] rounded-xl h-12" placeholder="搜索菜品名称" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
           </div>
+        </div>
+
+        {/* 家庭成员展示区域 */}
+        <div className="bg-white rounded-3xl shadow-xl p-6 mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-[#FF6B35]" style={{
+            fontFamily: 'Quicksand'
+          }}>
+              <Users className="h-6 w-6 inline mr-2" />家庭成员
+            </h2>
+            <span className="text-sm text-[#8B7355]" style={{
+            fontFamily: 'Nunito'
+          }}>{familyMembers.length} 位成员</span>
+          </div>
+          {membersLoading ? <div className="flex items-center justify-center py-4">
+              <Loader2 className="h-6 w-6 animate-spin text-[#FF8B4E]" />
+            </div> : familyMembers.length === 0 ? <div className="text-center py-4">
+              <Users className="h-10 w-10 mx-auto mb-2 text-[#FF8B4E]" />
+              <p className="text-sm text-[#8B7355]" style={{
+            fontFamily: 'Nunito'
+          }}>暂无注册家庭成员</p>
+            </div> : <div className="flex items-center gap-3 flex-wrap">
+              {familyMembers.map(member => <div key={member.id} className="flex items-center gap-2 bg-[#FCEEB8] rounded-xl px-3 py-2 shadow-sm hover:shadow-md transition-shadow">
+                  {member.avatar ? <img src={member.avatar} alt={member.nickname} className="w-8 h-8 rounded-full object-cover" /> : <div className="w-8 h-8 bg-[#FF8B4E] rounded-full flex items-center justify-center text-white text-sm font-bold" style={{
+              fontFamily: 'Quicksand'
+            }}>{member.nickname ? member.nickname.charAt(0) : '?'}</div>}
+                  <div>
+                    <p className="text-sm font-semibold text-[#FF6B35]" style={{
+                fontFamily: 'Quicksand'
+              }}>{member.nickname || '未命名'}</p>
+                    <p className={`text-xs font-semibold ${member.isActive ? 'text-[#9CCF4E]' : 'text-[#E85A42]'}`} style={{
+                fontFamily: 'Nunito'
+              }}>{member.isActive ? '在线' : '离线'}</p>
+                  </div>
+                </div>)}
+            </div>}
         </div>
 
         {/* 菜单网格区域 */}

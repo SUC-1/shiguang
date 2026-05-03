@@ -26,21 +26,35 @@ export default function FamilyHome(props) {
   const [recentMessages, setRecentMessages] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // 获取家庭订单数据 — 调用 manageOrders 云函数
+  // 获取家庭订单数据 — 直接查询 orders 数据模型
   const fetchOrders = async () => {
     try {
-      const result = await props.$w.cloud.callFunction({
-        name: 'manageOrders',
-        data: {
-          action: 'query',
-          queryType: 'byBusinessType',
-          businessType: 'family',
-          page: 1,
-          pageSize: 10
+      const result = await props.$w.cloud.callDataSource({
+        dataSourceName: 'orders',
+        methodName: 'wedaGetRecordsV2',
+        params: {
+          filter: {
+            where: {
+              $and: [{
+                businessType: {
+                  $eq: 'family'
+                }
+              }]
+            }
+          },
+          orderBy: [{
+            createdAt: 'desc'
+          }],
+          select: {
+            $master: true
+          },
+          getCount: true,
+          pageSize: 10,
+          pageNumber: 1
         }
       });
-      if (result.result && result.result.success) {
-        const orders = (result.result.data && result.result.data.orders || []).map(order => ({
+      if (result && result.records) {
+        const orders = result.records.map(order => ({
           id: order._id,
           userName: order.userName,
           dishes: (order.dishes || []).map(d => `${d.name} x${d.quantity}`),
@@ -49,8 +63,7 @@ export default function FamilyHome(props) {
           total: order.total || 0
         }));
         setRecentOrders(orders);
-        // 计算今日统计
-        const total = result.result.data.total || orders.length;
+        const total = result.total || orders.length;
         const completed = orders.filter(o => o.status === 'completed').length;
         const cooking = orders.filter(o => o.status === 'cooking').length;
         const pending = orders.filter(o => o.status === 'pending').length;
@@ -64,7 +77,7 @@ export default function FamilyHome(props) {
         toast({
           variant: 'destructive',
           title: '获取订单失败',
-          description: result.result && result.result.message || '请稍后重试'
+          description: '请稍后重试'
         });
       }
     } catch (error) {
@@ -76,20 +89,29 @@ export default function FamilyHome(props) {
     }
   };
 
-  // 获取最新留言 — 调用 manageMessageBoards 云函数
+  // 获取最新留言 — 直接查询 message_boards 数据模型
   const fetchMessages = async () => {
     try {
-      const result = await props.$w.cloud.callFunction({
-        name: 'manageMessageBoards',
-        data: {
-          action: 'query',
-          queryType: 'all',
-          page: 1,
-          pageSize: 5
+      const result = await props.$w.cloud.callDataSource({
+        dataSourceName: 'message_boards',
+        methodName: 'wedaGetRecordsV2',
+        params: {
+          filter: {
+            where: {}
+          },
+          orderBy: [{
+            createdAt: 'desc'
+          }],
+          select: {
+            $master: true
+          },
+          getCount: true,
+          pageSize: 5,
+          pageNumber: 1
         }
       });
-      if (result.result && result.result.success) {
-        const messages = (result.result.data && result.result.data.messages || []).map(msg => ({
+      if (result && result.records) {
+        const messages = result.records.map(msg => ({
           id: msg._id,
           content: msg.content,
           senderName: msg.senderName,
