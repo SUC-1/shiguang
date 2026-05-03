@@ -384,15 +384,12 @@ export default function FamilyActivityDetail(props) {
     }
   };
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-[#FCEEB8] via-[#FFEDD5] to-[#FFF8E7] flex items-center justify-center">
+    return <div className="min-h-screen bg-gradient-to-br from-[#FCEEB8] via-[#FFEDD5] to-[#FFF8E7] flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-[#FF8B4E]" />
-      </div>
-    );
+      </div>;
   }
   if (!activity) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-[#FCEEB8] via-[#FFEDD5] to-[#FFF8E7] flex flex-col items-center justify-center p-4">
+    return <div className="min-h-screen bg-gradient-to-br from-[#FCEEB8] via-[#FFEDD5] to-[#FFF8E7] flex flex-col items-center justify-center p-4">
         <AlertCircle className="h-16 w-16 text-[#E85A42] mb-4" />
         <h2 className="text-xl font-bold text-[#FF6B35] mb-2" style={{
         fontFamily: 'Quicksand'

@@ -279,14 +279,11 @@ export default function FamilyActivityForm(props) {
     }
   };
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-[#FCEEB8] via-[#FFEDD5] to-[#FFF8E7] flex items-center justify-center">
+    return <div className="min-h-screen bg-gradient-to-br from-[#FCEEB8] via-[#FFEDD5] to-[#FFF8E7] flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-[#FF8B4E]" />
-      </div>
-    );
+      </div>;
   }
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-[#FCEEB8] via-[#FFEDD5] to-[#FFF8E7] pb-8">
+  return <div className="min-h-screen bg-gradient-to-br from-[#FCEEB8] via-[#FFEDD5] to-[#FFF8E7] pb-8">
       {/* 头部 */}
       <div className="bg-white rounded-b-3xl shadow-xl p-6 mb-6">
         <div className="flex items-center gap-4">
