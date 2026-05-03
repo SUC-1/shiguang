@@ -348,11 +348,9 @@ export default function FamilyRole(props) {
           fontFamily: 'Quicksand'
         }}>加载角色数据...</p>
         </div>
-      </div>
-    );
+      </div>;
   }
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-[#FCEEB8] via-[#FF8B4E] to-[#FF6B35] flex items-center justify-center p-6">
+  return <div className="min-h-screen bg-gradient-to-br from-[#FCEEB8] via-[#FF8B4E] to-[#FF6B35] flex items-center justify-center p-6">
       <div className="max-w-4xl w-full">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
@@ -556,6 +554,5 @@ export default function FamilyRole(props) {
             </div>
           </div>}
       </div>
-    </div>
-  );
+    </div>;
 }

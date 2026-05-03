@@ -433,14 +433,15 @@ export default function FamilyChef(props) {
 
   // 加载状态
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-[#FCEEB8] via-[#FF8B4E] to-[#FF6B35] flex items-center justify-center pb-20">
+    return <div className="min-h-screen bg-gradient-to-br from-[#FCEEB8] via-[#FF8B4E] to-[#FF6B35] flex items-center justify-center pb-20">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-12 w-12 text-white animate-spin" />
-          <p className="text-white text-lg font-semibold" style={{ fontFamily: 'Quicksand' }}>加载订单数据...</p>
+          <p className="text-white text-lg font-semibold" style={{
+          fontFamily: 'Quicksand'
+        }}>加载订单数据...</p>
         </div>
-      </div>
-    );
+      </div>;
+  }
   return <div className="min-h-screen bg-gradient-to-br from-[#FCEEB8] via-[#FF8B4E] to-[#FF6B35] pb-20">
       <div className="max-w-6xl mx-auto p-6">
         {/* 头部区域 */}
@@ -455,11 +456,7 @@ export default function FamilyChef(props) {
               </h1>
             </div>
             <div className="flex items-center gap-3">
-              <Button 
-                className="bg-white text-[#FF8B4E] border-2 border-[#FF8B4E] h-10 px-3 rounded-xl hover:bg-[#FFF5F0]" 
-                onClick={handleRefresh}
-                title="刷新"
-              >
+              <Button className="bg-white text-[#FF8B4E] border-2 border-[#FF8B4E] h-10 px-3 rounded-xl hover:bg-[#FFF5F0]" onClick={handleRefresh} title="刷新">
                 <RefreshCw className="h-5 w-5" />
               </Button>
               <div className="flex items-center gap-2 text-sm text-[#8B7355]" style={{
