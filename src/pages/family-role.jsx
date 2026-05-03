@@ -6,7 +6,6 @@ import { Heart, ChefHat, ArrowRight, Users, Loader2, RefreshCw } from 'lucide-re
 import { Button, useToast } from '@/components/ui';
 
 import { ActionCard } from '@/components/ActionCard';
-
 export default function FamilyRole(props) {
   const {
     navigateTo
@@ -358,23 +357,20 @@ export default function FamilyRole(props) {
 
   // 加载状态
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-[#FCEEB8] via-[#FF8B4E] to-[#FF6B35] flex items-center justify-center p-6">
+    return <div className="min-h-screen bg-gradient-to-br from-[#FCEEB8] via-[#FF8B4E] to-[#FF6B35] flex items-center justify-center p-6">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-12 w-12 text-white animate-spin" />
-          <p className="text-white text-lg font-semibold" style={{ fontFamily: 'Quicksand' }}>加载角色数据...</p>
+          <p className="text-white text-lg font-semibold" style={{
+          fontFamily: 'Quicksand'
+        }}>加载角色数据...</p>
         </div>
-      </div>
-    );
+      </div>;
+  }
   return <div className="min-h-screen bg-gradient-to-br from-[#FCEEB8] via-[#FF8B4E] to-[#FF6B35] flex items-center justify-center p-6">
       <div className="max-w-4xl w-full">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
-            <Button 
-              className="bg-white/20 text-white border-2 border-white/30 h-10 px-4 rounded-xl hover:bg-white/30" 
-              onClick={handleRefresh}
-              title="刷新"
-            >
+            <Button className="bg-white/20 text-white border-2 border-white/30 h-10 px-4 rounded-xl hover:bg-white/30" onClick={handleRefresh} title="刷新">
               <RefreshCw className="h-5 w-5" />
             </Button>
           </div>
@@ -494,7 +490,7 @@ export default function FamilyRole(props) {
           </div>}
 
         {/* 角色管理按钮（管理员可见） */}
-        {(userPermissions && (userPermissions.role === 'admin' || userPermissions.role === 'owner')) && <div className="mt-6 text-center">
+        {userPermissions && (userPermissions.role === 'admin' || userPermissions.role === 'owner') && <div className="mt-6 text-center">
             <Button onClick={() => setShowRoleManagement(true)} className="bg-[#9CCF4E] text-white h-12 px-6 font-bold rounded-xl hover:bg-[#FF6B35] shadow-lg" style={{
           fontFamily: 'Quicksand'
         }}>
@@ -503,7 +499,7 @@ export default function FamilyRole(props) {
           </div>}
 
         {/* 角色变更申请按钮 */}
-        {(userPermissions && userPermissions.permissions?.canInviteMembers) && <div className="mt-4 text-center">
+        {userPermissions && userPermissions.permissions?.canInviteMembers && <div className="mt-4 text-center">
             <Button onClick={() => setShowRoleTransition(true)} className="bg-[#FF8B4E] text-white h-12 px-6 font-bold rounded-xl hover:bg-[#FF6B35] shadow-lg" style={{
           fontFamily: 'Quicksand'
         }}>
@@ -555,7 +551,7 @@ export default function FamilyRole(props) {
             fontFamily: 'Nunito'
           }}>暂无待审批申请</p>}
             </div>
-          </div>
+          </div>}
 
         {/* 角色变更申请弹窗 */}
         {showRoleTransition && <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
