@@ -19,36 +19,84 @@ export default function FamilyRole(props) {
   const [chefUsers, setChefUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // 获取角色用户数据 — 调用 manageUsers 云函数
+  // 获取角色用户数据 — 直接查询 users 数据模型
   const fetchRoleUsers = async () => {
     try {
-      const [memberResult, chefResult] = await Promise.all([props.$w.cloud.callFunction({
-        name: 'manageUsers',
-        data: {
-          action: 'query',
-          queryType: 'byRole',
-          role: 'family_member',
-          page: 1,
-          pageSize: 10
+      const [memberResult, chefResult] = await Promise.all([props.$w.cloud.callDataSource({
+        dataSourceName: 'users',
+        methodName: 'wedaGetRecordsV2',
+        params: {
+          filter: {
+            where: {
+              $and: [{
+                role: {
+                  $eq: 'family_member'
+                }
+              }, {
+                isActive: {
+                  $eq: true
+                }
+              }]
+            }
+          },
+          orderBy: [{
+            createdAt: 'desc'
+          }],
+          select: {
+            $master: true
+          },
+          getCount: true,
+          pageSize: 10,
+          pageNumber: 1
         }
-      }), props.$w.cloud.callFunction({
-        name: 'manageUsers',
-        data: {
-          action: 'query',
-          queryType: 'byRole',
-          role: 'family_chef',
-          page: 1,
-          pageSize: 10
+      }), props.$w.cloud.callDataSource({
+        dataSourceName: 'users',
+        methodName: 'wedaGetRecordsV2',
+        params: {
+          filter: {
+            where: {
+              $and: [{
+                role: {
+                  $eq: 'family_chef'
+                }
+              }, {
+                isActive: {
+                  $eq: true
+                }
+              }]
+            }
+          },
+          orderBy: [{
+            createdAt: 'desc'
+          }],
+          select: {
+            $master: true
+          },
+          getCount: true,
+          pageSize: 10,
+          pageNumber: 1
         }
       })]);
-      if (memberResult.result && memberResult.result.success) {
-        const users = memberResult.result.data && memberResult.result.data.users || [];
-        setMemberCount(memberResult.result.data ? memberResult.result.data.total : users.length);
+      if (memberResult && memberResult.records) {
+        const users = memberResult.records.map(u => ({
+          _id: u._id,
+          nickname: u.nickname,
+          avatar: u.avatar,
+          role: u.role,
+          isActive: u.isActive
+        }));
+        setMemberCount(memberResult.total || users.length);
         setMemberUsers(users.slice(0, 3));
       }
-      if (chefResult.result && chefResult.result.success) {
-        const users = chefResult.result.data && chefResult.result.data.users || [];
-        setChefCount(chefResult.result.data ? chefResult.result.data.total : users.length);
+      if (chefResult && chefResult.records) {
+        const users = chefResult.records.map(u => ({
+          _id: u._id,
+          nickname: u.nickname,
+          avatar: u.avatar,
+          role: u.role,
+          isActive: u.isActive
+        }));
+        setChefCount(chefResult.total || users.length);
         setChefUsers(users.slice(0, 3));
       }
     } catch (error) {

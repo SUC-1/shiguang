@@ -24,21 +24,35 @@ export default function FamilyChef(props) {
   const [loading, setLoading] = useState(true);
   const [updatingStatus, setUpdatingStatus] = useState({});
 
-  // 获取订单数据 — 调用 manageOrders 云函数
+  // 获取订单数据 — 直接查询 orders 数据模型
   const fetchOrders = async () => {
     try {
-      const result = await props.$w.cloud.callFunction({
-        name: 'manageOrders',
-        data: {
-          action: 'query',
-          queryType: 'byBusinessType',
-          businessType: 'family',
-          page: 1,
-          pageSize: 20
+      const result = await props.$w.cloud.callDataSource({
+        dataSourceName: 'orders',
+        methodName: 'wedaGetRecordsV2',
+        params: {
+          filter: {
+            where: {
+              $and: [{
+                businessType: {
+                  $eq: 'family'
+                }
+              }]
+            }
+          },
+          orderBy: [{
+            createdAt: 'desc'
+          }],
+          select: {
+            $master: true
+          },
+          getCount: true,
+          pageSize: 20,
+          pageNumber: 1
         }
       });
-      if (result.result && result.result.success) {
-        const fetchedOrders = (result.result.data && result.result.data.orders || []).map(order => ({
+      if (result && result.records) {
+        const fetchedOrders = result.records.map(order => ({
           id: order._id,
           userName: order.userName,
           dishes: (order.dishes || []).map(d => ({
@@ -58,7 +72,7 @@ export default function FamilyChef(props) {
         toast({
           variant: 'destructive',
           title: '获取订单失败',
-          description: result.result && result.result.message || '请稍后重试'
+          description: '请稍后重试'
         });
       }
     } catch (error) {
@@ -70,21 +84,35 @@ export default function FamilyChef(props) {
     }
   };
 
-  // 获取菜品数据 — 调用 manageDishes 云函数
+  // 获取菜品数据 — 直接查询 dishes 数据模型
   const fetchDishes = async () => {
     try {
-      const result = await props.$w.cloud.callFunction({
-        name: 'manageDishes',
-        data: {
-          action: 'query',
-          queryType: 'byBusinessType',
-          businessType: 'family',
-          page: 1,
-          pageSize: 50
+      const result = await props.$w.cloud.callDataSource({
+        dataSourceName: 'dishes',
+        methodName: 'wedaGetRecordsV2',
+        params: {
+          filter: {
+            where: {
+              $and: [{
+                businessType: {
+                  $eq: 'family'
+                }
+              }]
+            }
+          },
+          orderBy: [{
+            createdAt: 'desc'
+          }],
+          select: {
+            $master: true
+          },
+          getCount: true,
+          pageSize: 50,
+          pageNumber: 1
         }
       });
-      if (result.result && result.result.success) {
-        const fetched = (result.result.data && result.result.data.dishes || []).map(d => ({
+      if (result && result.records) {
+        const fetched = result.records.map(d => ({
           _id: d._id,
           name: d.name,
           image: d.image,
@@ -118,22 +146,32 @@ export default function FamilyChef(props) {
     if (diff < 3600) return `${Math.floor(diff / 60)}分钟前`;
     return `${Math.floor(diff / 3600)}小时前`;
   };
-  // 订单状态更新 — 调用 manageOrders 云函数
+  // 订单状态更新 — 直接更新 orders 数据模型
   const handleStatusChange = async (orderId, newStatus) => {
     setUpdatingStatus(prev => ({
       ...prev,
       [orderId]: true
     }));
     try {
-      const result = await props.$w.cloud.callFunction({
-        name: 'manageOrders',
-        data: {
-          action: 'updateStatus',
-          orderId: orderId,
-          status: newStatus
+      const result = await props.$w.cloud.callDataSource({
+        dataSourceName: 'orders',
+        methodName: 'wedaUpdateV2',
+        params: {
+          data: {
+            status: newStatus
+          },
+          filter: {
+            where: {
+              $and: [{
+                _id: {
+                  $eq: orderId
+                }
+              }]
+            }
+          }
         }
       });
-      if (result.result && result.result.success) {
+      if (result && result.count !== 0) {
         toast({
           variant: 'default',
           title: '状态更新成功',
@@ -144,7 +182,7 @@ export default function FamilyChef(props) {
         toast({
           variant: 'destructive',
           title: '状态更新失败',
-          description: result.result && result.result.message || '请重试'
+          description: '请重试'
         });
       }
     } catch (error) {
