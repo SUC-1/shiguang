@@ -3,14 +3,12 @@ import React, { useState, useEffect } from 'react';
 // @ts-ignore;
 import { useToast, Button, Input } from '@/components/ui';
 // @ts-ignore;
-import { ShoppingCart, Search, Heart, MessageSquare, Expand, Check, X, ChefHat, Sparkles, Loader2, Users, Inbox } from 'lucide-react';
+import { ShoppingCart, Search, Heart, MessageSquare, Expand, Check, X, ChefHat, Sparkles, Loader2, Users, RefreshCw, Filter } from 'lucide-react';
 
 // @ts-ignore;
 import TabBar from '@/components/TabBar';
-// @ts-ignore;
-import { EmptyState, LoadingState } from '@/components/EmptyState';
-// @ts-ignore;
-import { ActionButton } from '@/components/ActionButton';
+import { SkeletonCard, EmptyState, StatCard, GradientButton } from '@/components/SkeletonCard';
+import { MemberAvatar, MemberAvatarGroup } from '@/components/MemberCard';
 export default function FamilyMember(props) {
   const {
     toast
@@ -408,10 +406,27 @@ export default function FamilyMember(props) {
   };
   const filteredDishes = menuData.filter(dish => dish.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
+  // 刷新数据
+  const handleRefresh = async () => {
+    setLoading(true);
+    setMembersLoading(true);
+    await Promise.all([fetchDishes(), fetchFamilyMembers(), fetchUserPermissions()]);
+    setLoading(false);
+    setMembersLoading(false);
+  };
+
   // 加载状态
   if (loading) {
     return <div className="min-h-screen bg-gradient-to-br from-[#FCEEB8] via-[#FF8B4E] to-[#FF6B35] flex items-center justify-center pb-20">
-        <LoadingState message="正在加载菜单..." />
+        <div className="flex flex-col items-center gap-4">
+          <div className="relative">
+            <div className="w-16 h-16 border-4 border-white/30 rounded-full"></div>
+            <div className="absolute top-0 left-0 w-16 h-16 border-4 border-white rounded-full border-t-transparent animate-spin"></div>
+          </div>
+          <p className="text-white text-lg font-semibold" style={{
+          fontFamily: 'Quicksand'
+        }}>加载中...</p>
+        </div>
       </div>;
   }
   return <div className="min-h-screen bg-gradient-to-br from-[#FCEEB8] via-[#FF8B4E] to-[#FF6B35] pb-20">
@@ -420,24 +435,34 @@ export default function FamilyMember(props) {
         <div className="bg-white rounded-3xl shadow-xl p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <Heart className="h-10 w-10 text-[#FF8B4E]" />
+              <div className="relative">
+                <div className="absolute -inset-1 bg-gradient-to-r from-[#FF8B4E] to-[#FF6B35] rounded-full opacity-30"></div>
+                <Heart className="h-10 w-10 text-[#FF8B4E] relative" />
+              </div>
               <h1 className="text-2xl font-bold text-[#FF6B35]" style={{
               fontFamily: 'Quicksand'
             }}>温馨家庭 - 点菜</h1>
             </div>
             <div className="flex items-center gap-4">
+              {/* 刷新按钮 */}
+              <Button variant="outline" size="icon" className="rounded-xl border-[#FF8B4E] text-[#FF8B4E] hover:bg-[#FF8B4E] hover:text-white" onClick={handleRefresh}>
+                <RefreshCw className="h-5 w-5" />
+              </Button>
+              
               {userPermissions && <div className="flex items-center gap-2 text-sm text-[#8B7355]" style={{
               fontFamily: 'Nunito'
             }}>
-                <span>角色: {userPermissions.role}</span>
-                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${userPermissions.hasPermission ? 'bg-[#9CCF4E] text-white' : 'bg-[#E85A42] text-white'}`}>
-                  {userPermissions.hasPermission ? '有权限' : '无权限'}
-                </span>
-              </div>}
-              <ShoppingCart className="h-6 w-6 text-[#FF8B4E]" />
-              <span className="text-lg font-semibold text-[#FF6B35]" style={{
-              fontFamily: 'Quicksand'
-            }}>已选: {selectedDishes.length}</span>
+                  <span>角色: {userPermissions.role}</span>
+                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${userPermissions.hasPermission ? 'bg-[#9CCF4E] text-white' : 'bg-[#E85A42] text-white'}`}>
+                    {userPermissions.hasPermission ? '有权限' : '无权限'}
+                  </span>
+                </div>}
+              <div className="relative">
+                <ShoppingCart className="h-6 w-6 text-[#FF8B4E]" />
+                {selectedDishes.length > 0 && <span className="absolute -top-2 -right-2 w-5 h-5 bg-[#E85A42] text-white text-xs rounded-full flex items-center justify-center">
+                    {selectedDishes.length}
+                  </span>}
+              </div>
             </div>
           </div>
           
@@ -481,9 +506,14 @@ export default function FamilyMember(props) {
             fontFamily: 'Nunito'
           }}>{familyMembers.length} 位成员</span>
           </div>
-          {membersLoading ? <div className="py-4">
-              <LoadingState message="加载成员中..." />
-            </div> : familyMembers.length === 0 ? <EmptyState icon="inbox" title="暂无家庭成员" description="还没有家庭成员加入，快去邀请家人吧" className="py-4" /> : <div className="flex items-center gap-3 flex-wrap">
+          {membersLoading ? <div className="flex items-center justify-center py-4">
+              <Loader2 className="h-6 w-6 animate-spin text-[#FF8B4E]" />
+            </div> : familyMembers.length === 0 ? <div className="text-center py-4">
+              <Users className="h-10 w-10 mx-auto mb-2 text-[#FF8B4E]" />
+              <p className="text-sm text-[#8B7355]" style={{
+            fontFamily: 'Nunito'
+          }}>暂无家庭成员</p>
+            </div> : <div className="flex items-center gap-3 flex-wrap">
               {familyMembers.map(member => <div key={member.id} className="flex items-center gap-2 bg-[#FCEEB8] rounded-xl px-3 py-2 shadow-sm hover:shadow-md transition-shadow">
                   <div className="w-8 h-8 bg-[#FF8B4E] rounded-full flex items-center justify-center text-white text-sm font-bold" style={{
               fontFamily: 'Quicksand'

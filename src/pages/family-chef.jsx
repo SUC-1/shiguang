@@ -3,14 +3,11 @@ import React, { useState, useEffect } from 'react';
 // @ts-ignore;
 import { useToast, Button } from '@/components/ui';
 // @ts-ignore;
-import { ChefHat, ShoppingCart, BookOpen, Play, Clock, Users, CheckCircle, ListChecks, Video, Image as ImageIcon, Info, Loader2, Flame, Inbox } from 'lucide-react';
+import { ChefHat, ShoppingCart, BookOpen, Play, Clock, Users, CheckCircle, ListChecks, Video, Image as ImageIcon, Info, Loader2, Flame, RefreshCw, Sparkles } from 'lucide-react';
 
 // @ts-ignore;
 import TabBar from '@/components/TabBar';
-// @ts-ignore;
-import { EmptyState, LoadingState } from '@/components/EmptyState';
-// @ts-ignore;
-import { ActionButton } from '@/components/ActionButton';
+import { SkeletonCard, EmptyState, StatCard, GradientButton } from '@/components/SkeletonCard';
 export default function FamilyChef(props) {
   const {
     toast
@@ -83,6 +80,12 @@ export default function FamilyChef(props) {
           total: order.total || 0
         }));
         setOrders(fetchedOrders);
+      } else {
+        toast({
+          variant: 'destructive',
+          title: '获取订单失败',
+          description: '请稍后重试'
+        });
       }
     } catch (error) {
       toast({
@@ -420,11 +423,21 @@ export default function FamilyChef(props) {
     return Object.values(summary);
   };
   const ingredientSummary = getIngredientSummary();
+  // 刷新数据
+  const handleRefresh = async () => {
+    setLoading(true);
+    await Promise.all([fetchOrders(), fetchDishes()]);
+    setLoading(false);
+  };
+
   // 加载状态
   if (loading) {
     return <div className="min-h-screen bg-gradient-to-br from-[#FCEEB8] via-[#FF8B4E] to-[#FF6B35] flex items-center justify-center pb-20">
         <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-12 w-12 text-white animate-spin" />
+          <div className="relative">
+            <div className="w-16 h-16 border-4 border-white/30 rounded-full"></div>
+            <div className="absolute top-0 left-0 w-16 h-16 border-4 border-white rounded-full border-t-transparent animate-spin"></div>
+          </div>
           <p className="text-white text-lg font-semibold" style={{
           fontFamily: 'Quicksand'
         }}>加载中...</p>
@@ -437,22 +450,36 @@ export default function FamilyChef(props) {
         <div className="bg-white rounded-3xl shadow-xl p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <ChefHat className="h-10 w-10 text-[#FF8B4E]" />
+              <div className="relative">
+                <div className="absolute -inset-1 bg-gradient-to-r from-[#FF8B4E] to-[#FF6B35] rounded-full opacity-30"></div>
+                <ChefHat className="h-10 w-10 text-[#FF8B4E] relative" />
+              </div>
               <h1 className="text-2xl font-bold text-[#FF6B35]" style={{
               fontFamily: 'Quicksand'
             }}>
                 家庭大厨工作台
               </h1>
             </div>
-            <div className="flex items-center gap-2 text-sm text-[#8B7355]" style={{
-            fontFamily: 'Nunito'
-          }}>
-              <Users className="h-4 w-4" />
-              <span>{currentUser.nickName || currentUser.name || '大厨'}</span>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 text-sm text-[#8B7355]" style={{
+              fontFamily: 'Nunito'
+            }}>
+                <Users className="h-4 w-4" />
+                <span>{currentUser.nickName || currentUser.name || '大厨'}</span>
+              </div>
+              
+              {/* 刷新按钮 */}
+              <Button variant="outline" size="icon" className="rounded-xl border-[#FF8B4E] text-[#FF8B4E] hover:bg-[#FF8B4E] hover:text-white" onClick={handleRefresh}>
+                <RefreshCw className="h-5 w-5" />
+              </Button>
+              
+              <Button className="bg-[#FF8B4E] text-white h-10 px-4 font-bold rounded-xl shadow-lg hover:bg-[#FF6B35] hover:scale-105 transition-all" onClick={() => setShowCreateOrder(true)} style={{
+              fontFamily: 'Quicksand'
+            }}>
+                <Sparkles className="h-4 w-4 mr-1" />
+                新建订单
+              </Button>
             </div>
-            <Button className="bg-[#FF8B4E] text-white h-10 px-4 font-bold rounded-xl shadow-lg hover:bg-[#FF6B35]" onClick={() => setShowCreateOrder(true)} style={{
-            fontFamily: 'Quicksand'
-          }}>新建订单</Button>
           </div>
 
           {/* Tab切换 */}

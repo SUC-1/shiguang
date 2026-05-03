@@ -1,1 +1,46 @@
-[The data is outdated; Use the MultiRead tool to obtain the latest version.]
+{
+  "name": "family_event_participants",
+  "schema": {
+    "_id": {
+      "type": "string",
+      "description": "参与者ID"
+    },
+    "eventId": {
+      "type": "string",
+      "description": "事件ID",
+      "required": true
+    },
+    "userId": {
+      "type": "string",
+      "description": "用户ID",
+      "required": true
+    },
+    "nickname": {
+      "type": "string",
+      "description": "用户昵称"
+    },
+    "avatar": {
+      "type": "string",
+      "description": "用户头像"
+    },
+    "responseStatus": {
+      "type": "string",
+      "description": "响应状态: pending-待响应, accepted-已接受, declined-已拒绝, tentative-待定",
+      "default": "pending"
+    },
+    "reminderEnabled": {
+      "type": "boolean",
+      "description": "是否启用提醒",
+      "default": true
+    },
+    "reminderMinutesBefore": {
+      "type": "number",
+      "description": "提前提醒分钟数",
+      "default": 30
+    },
+    "createdAt": {
+      "type": "datetime",
+      "description": "创建时间"
+    }
+  }
+}

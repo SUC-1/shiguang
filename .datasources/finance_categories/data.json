@@ -1,158 +1,98 @@
 [
   {
-    "_id": "fc_exp_001",
-    "familyGroupId": "fg_001",
-    "type": "expense",
-    "name": "餐饮",
-    "icon": "UtensilsCrossed",
-    "color": "#FF6B35",
-    "sortOrder": 1,
-    "isDefault": true,
-    "isActive": true,
-    "createdAt": "2026-01-01T00:00:00Z"
-  },
-  {
-    "_id": "fc_exp_002",
-    "familyGroupId": "fg_001",
-    "type": "expense",
-    "name": "交通",
-    "icon": "Car",
-    "color": "#4A90E2",
-    "sortOrder": 2,
-    "isDefault": true,
-    "isActive": true,
-    "createdAt": "2026-01-01T00:00:00Z"
-  },
-  {
-    "_id": "fc_exp_003",
-    "familyGroupId": "fg_001",
-    "type": "expense",
-    "name": "购物",
-    "icon": "ShoppingBag",
-    "color": "#9B59B6",
-    "sortOrder": 3,
-    "isDefault": true,
-    "isActive": true,
-    "createdAt": "2026-01-01T00:00:00Z"
-  },
-  {
-    "_id": "fc_exp_004",
-    "familyGroupId": "fg_001",
-    "type": "expense",
-    "name": "教育",
-    "icon": "GraduationCap",
-    "color": "#27AE60",
-    "sortOrder": 4,
-    "isDefault": true,
-    "isActive": true,
-    "createdAt": "2026-01-01T00:00:00Z"
-  },
-  {
-    "_id": "fc_exp_005",
-    "familyGroupId": "fg_001",
-    "type": "expense",
-    "name": "医疗",
-    "icon": "Heart",
-    "color": "#E74C3C",
-    "sortOrder": 5,
-    "isDefault": true,
-    "isActive": true,
-    "createdAt": "2026-01-01T00:00:00Z"
-  },
-  {
-    "_id": "fc_exp_006",
-    "familyGroupId": "fg_001",
-    "type": "expense",
-    "name": "娱乐",
-    "icon": "Gamepad2",
-    "color": "#F39C12",
-    "sortOrder": 6,
-    "isDefault": true,
-    "isActive": true,
-    "createdAt": "2026-01-01T00:00:00Z"
-  },
-  {
-    "_id": "fc_exp_007",
-    "familyGroupId": "fg_001",
-    "type": "expense",
-    "name": "水电",
-    "icon": "Zap",
-    "color": "#3498DB",
-    "sortOrder": 7,
-    "isDefault": true,
-    "isActive": true,
-    "createdAt": "2026-01-01T00:00:00Z"
-  },
-  {
-    "_id": "fc_exp_008",
-    "familyGroupId": "fg_001",
-    "type": "expense",
-    "name": "通讯",
-    "icon": "Phone",
-    "color": "#1ABC9C",
-    "sortOrder": 8,
-    "isDefault": true,
-    "isActive": true,
-    "createdAt": "2026-01-01T00:00:00Z"
-  },
-  {
-    "_id": "fc_exp_009",
-    "familyGroupId": "fg_001",
-    "type": "expense",
-    "name": "其他",
-    "icon": "MoreHorizontal",
-    "color": "#95A5A6",
-    "sortOrder": 99,
-    "isDefault": true,
-    "isActive": true,
-    "createdAt": "2026-01-01T00:00:00Z"
-  },
-  {
-    "_id": "fc_inc_001",
-    "familyGroupId": "fg_001",
-    "type": "income",
+    "_id": "cat_001",
     "name": "工资",
-    "icon": "Wallet",
-    "color": "#27AE60",
-    "sortOrder": 1,
-    "isDefault": true,
-    "isActive": true,
-    "createdAt": "2026-01-01T00:00:00Z"
+    "type": "income",
+    "icon": "💰",
+    "color": "#9CCF4E",
+    "sort": 1
   },
   {
-    "_id": "fc_inc_002",
-    "familyGroupId": "fg_001",
-    "type": "income",
+    "_id": "cat_002",
     "name": "奖金",
-    "icon": "Gift",
-    "color": "#F39C12",
-    "sortOrder": 2,
-    "isDefault": true,
-    "isActive": true,
-    "createdAt": "2026-01-01T00:00:00Z"
+    "type": "income",
+    "icon": "🎁",
+    "color": "#FF8B4E",
+    "sort": 2
   },
   {
-    "_id": "fc_inc_003",
-    "familyGroupId": "fg_001",
+    "_id": "cat_003",
+    "name": "投资收益",
     "type": "income",
-    "name": "理财",
-    "icon": "TrendingUp",
-    "color": "#3498DB",
-    "sortOrder": 3,
-    "isDefault": true,
-    "isActive": true,
-    "createdAt": "2026-01-01T00:00:00Z"
+    "icon": "📈",
+    "color": "#4CAF50",
+    "sort": 3
   },
   {
-    "_id": "fc_inc_004",
-    "familyGroupId": "fg_001",
+    "_id": "cat_004",
+    "name": "其他收入",
     "type": "income",
-    "name": "其他",
-    "icon": "MoreHorizontal",
-    "color": "#95A5A6",
-    "sortOrder": 99,
-    "isDefault": true,
-    "isActive": true,
-    "createdAt": "2026-01-01T00:00:00Z"
+    "icon": "💵",
+    "color": "#8BC34A",
+    "sort": 4
+  },
+  {
+    "_id": "cat_005",
+    "name": "餐饮",
+    "type": "expense",
+    "icon": "🍜",
+    "color": "#FF6B35",
+    "sort": 1
+  },
+  {
+    "_id": "cat_006",
+    "name": "购物",
+    "type": "expense",
+    "icon": "🛒",
+    "color": "#E91E63",
+    "sort": 2
+  },
+  {
+    "_id": "cat_007",
+    "name": "交通",
+    "type": "expense",
+    "icon": "🚗",
+    "color": "#2196F3",
+    "sort": 3
+  },
+  {
+    "_id": "cat_008",
+    "name": "教育",
+    "type": "expense",
+    "icon": "📚",
+    "color": "#9C27B0",
+    "sort": 4
+  },
+  {
+    "_id": "cat_009",
+    "name": "医疗",
+    "type": "expense",
+    "icon": "🏥",
+    "color": "#F44336",
+    "sort": 5
+  },
+  {
+    "_id": "cat_010",
+    "name": "娱乐",
+    "type": "expense",
+    "icon": "🎮",
+    "color": "#FF9800",
+    "sort": 6
+  },
+  {
+    "_id": "cat_011",
+    "name": "住房",
+    "type": "expense",
+    "icon": "🏠",
+    "color": "#795548",
+    "sort": 7
+  },
+  {
+    "_id": "cat_012",
+    "name": "其他支出",
+    "type": "expense",
+    "icon": "📝",
+    "color": "#607D8B",
+    "sort": 8
   }
 ]

@@ -1,48 +1,22 @@
 [
   {
-    "_id": "fb_2026_05",
+    "_id": "budget_001",
     "familyGroupId": "fg_001",
     "year": 2026,
     "month": 5,
-    "totalBudget": 20000,
-    "categoryBudgets": {
-      "餐饮": { "budget": 4000, "spent": 128.5 },
-      "交通": { "budget": 1500, "spent": 45 },
-      "购物": { "budget": 3000, "spent": 356.8 },
-      "教育": { "budget": 5000, "spent": 2800 },
-      "医疗": { "budget": 1000, "spent": 0 },
-      "娱乐": { "budget": 1500, "spent": 0 },
-      "水电": { "budget": 800, "spent": 0 },
-      "通讯": { "budget": 300, "spent": 0 },
-      "其他": { "budget": 2900, "spent": 0 }
-    },
-    "alertThreshold": 80,
-    "isActive": true,
-    "notes": "5月预算计划",
-    "createdBy": "u_002",
-    "createdAt": "2026-05-01T00:00:00Z"
+    "totalBudget": 10000,
+    "categoryBudgets": "{\"餐饮\":3000,\"购物\":2000,\"交通\":1000,\"教育\":1500,\"医疗\":500,\"娱乐\":1000,\"其他\":1000}",
+    "status": "active",
+    "createdBy": "user_001"
   },
   {
-    "_id": "fb_2026_04",
+    "_id": "budget_002",
     "familyGroupId": "fg_001",
     "year": 2026,
     "month": 4,
-    "totalBudget": 18000,
-    "categoryBudgets": {
-      "餐饮": { "budget": 3500, "spent": 3200 },
-      "交通": { "budget": 1200, "spent": 1150 },
-      "购物": { "budget": 2500, "spent": 2800 },
-      "教育": { "budget": 5000, "spent": 5000 },
-      "医疗": { "budget": 800, "spent": 180 },
-      "娱乐": { "budget": 1200, "spent": 298 },
-      "水电": { "budget": 700, "spent": 650 },
-      "通讯": { "budget": 250, "spent": 248 },
-      "其他": { "budget": 2850, "spent": 2100 }
-    },
-    "alertThreshold": 80,
-    "isActive": true,
-    "notes": "4月预算执行情况",
-    "createdBy": "u_002",
-    "createdAt": "2026-04-01T00:00:00Z"
+    "totalBudget": 10000,
+    "categoryBudgets": "{\"餐饮\":3000,\"购物\":2000,\"交通\":1000,\"教育\":1500,\"医疗\":500,\"娱乐\":1000,\"其他\":1000}",
+    "status": "closed",
+    "createdBy": "user_001"
   }
 ]

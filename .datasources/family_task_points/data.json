@@ -1,0 +1,41 @@
+[
+  {
+    "_id": "points_001",
+    "familyGroupId": "fg_001",
+    "userId": "user_001",
+    "nickname": "爸爸",
+    "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=dad",
+    "totalPoints": 150,
+    "availablePoints": 120,
+    "spentPoints": 30,
+    "completedTasks": 15,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-05-01T00:00:00.000Z"
+  },
+  {
+    "_id": "points_002",
+    "familyGroupId": "fg_001",
+    "userId": "user_002",
+    "nickname": "妈妈",
+    "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=mom",
+    "totalPoints": 180,
+    "availablePoints": 150,
+    "spentPoints": 30,
+    "completedTasks": 18,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-05-01T00:00:00.000Z"
+  },
+  {
+    "_id": "points_003",
+    "familyGroupId": "fg_001",
+    "userId": "user_003",
+    "nickname": "小明",
+    "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=kid",
+    "totalPoints": 200,
+    "availablePoints": 80,
+    "spentPoints": 120,
+    "completedTasks": 20,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-05-01T00:00:00.000Z"
+  }
+]

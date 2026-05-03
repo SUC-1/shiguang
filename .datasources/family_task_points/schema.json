@@ -1,0 +1,67 @@
+{
+  "name": "family_task_points",
+  "title": "家庭成员积分",
+  "description": "家庭成员积分账户",
+  "columns": [
+    {
+      "name": "familyGroupId",
+      "title": "家庭组ID",
+      "type": "string",
+      "description": "关联的家庭组"
+    },
+    {
+      "name": "userId",
+      "title": "用户ID",
+      "type": "string",
+      "description": "用户ID"
+    },
+    {
+      "name": "nickname",
+      "title": "用户昵称",
+      "type": "string",
+      "description": "用户昵称"
+    },
+    {
+      "name": "avatar",
+      "title": "用户头像",
+      "type": "string",
+      "description": "用户头像URL"
+    },
+    {
+      "name": "totalPoints",
+      "title": "总积分",
+      "type": "number",
+      "description": "累计获得的总积分"
+    },
+    {
+      "name": "availablePoints",
+      "title": "可用积分",
+      "type": "number",
+      "description": "当前可用的积分"
+    },
+    {
+      "name": "spentPoints",
+      "title": "已使用积分",
+      "type": "number",
+      "description": "已兑换使用的积分"
+    },
+    {
+      "name": "completedTasks",
+      "title": "已完成任务数",
+      "type": "number",
+      "description": "累计完成的任务数量"
+    },
+    {
+      "name": "createdAt",
+      "title": "创建时间",
+      "type": "datetime",
+      "description": "积分账户创建时间"
+    },
+    {
+      "name": "updatedAt",
+      "title": "更新时间",
+      "type": "datetime",
+      "description": "积分账户更新时间"
+    }
+  ]
+}

@@ -1,1 +1,33 @@
-[The data is outdated; Use the MultiRead tool to obtain the latest version.]
+{
+  "name": "family_event_reminders",
+  "schema": {
+    "_id": {
+      "type": "string",
+      "description": "提醒ID"
+    },
+    "eventId": {
+      "type": "string",
+      "description": "事件ID",
+      "required": true
+    },
+    "userId": {
+      "type": "string",
+      "description": "用户ID",
+      "required": true
+    },
+    "reminderTime": {
+      "type": "datetime",
+      "description": "提醒时间",
+      "required": true
+    },
+    "isTriggered": {
+      "type": "boolean",
+      "description": "是否已触发",
+      "default": false
+    },
+    "createdAt": {
+      "type": "datetime",
+      "description": "创建时间"
+    }
+  }
+}

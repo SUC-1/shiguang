@@ -5,68 +5,45 @@
   "fields": [
     {
       "name": "familyGroupId",
-      "type": "string",
       "title": "家庭组ID",
+      "type": "string",
       "required": true
     },
     {
       "name": "year",
-      "type": "number",
       "title": "年份",
+      "type": "number",
       "required": true
     },
     {
       "name": "month",
-      "type": "number",
       "title": "月份",
+      "type": "number",
       "required": true
     },
     {
       "name": "totalBudget",
-      "type": "number",
       "title": "总预算",
+      "type": "number",
       "required": true
     },
     {
       "name": "categoryBudgets",
-      "type": "object",
       "title": "分类预算",
-      "description": "各分类的预算设置"
+      "type": "string"
     },
     {
-      "name": "alertThreshold",
-      "type": "number",
-      "title": "预警阈值",
-      "description": "预算使用百分比达到此值时预警",
-      "default": 80
-    },
-    {
-      "name": "isActive",
-      "type": "boolean",
-      "title": "是否启用",
-      "default": true
-    },
-    {
-      "name": "notes",
+      "name": "status",
+      "title": "状态",
       "type": "string",
-      "title": "备注"
+      "enum": ["active", "closed"],
+      "enumNames": ["进行中", "已结束"],
+      "default": "active"
     },
     {
       "name": "createdBy",
-      "type": "string",
-      "title": "创建者"
-    },
-    {
-      "name": "createdAt",
-      "type": "datetime",
-      "title": "创建时间",
-      "default": "now()"
-    },
-    {
-      "name": "updatedAt",
-      "type": "datetime",
-      "title": "更新时间",
-      "default": "now()"
+      "title": "创建人",
+      "type": "string"
     }
   ]
 }

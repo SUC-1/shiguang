@@ -1,1 +1,103 @@
-[The data is outdated; Use the MultiRead tool to obtain the latest version.]
+{
+  "name": "family_tasks",
+  "title": "家庭任务",
+  "description": "家庭成员任务管理",
+  "columns": [
+    {
+      "name": "familyGroupId",
+      "title": "家庭组ID",
+      "type": "string",
+      "description": "关联的家庭组"
+    },
+    {
+      "name": "title",
+      "title": "任务标题",
+      "type": "string",
+      "description": "任务名称"
+    },
+    {
+      "name": "description",
+      "title": "任务描述",
+      "type": "text",
+      "description": "任务详细描述"
+    },
+    {
+      "name": "assigneeId",
+      "title": "分配人ID",
+      "type": "string",
+      "description": "任务分配给的用户ID"
+    },
+    {
+      "name": "assigneeName",
+      "title": "分配人名称",
+      "type": "string",
+      "description": "任务分配人昵称"
+    },
+    {
+      "name": "assigneeAvatar",
+      "title": "分配人头像",
+      "type": "string",
+      "description": "任务分配人头像URL"
+    },
+    {
+      "name": "creatorId",
+      "title": "创建人ID",
+      "type": "string",
+      "description": "任务创建者ID"
+    },
+    {
+      "name": "creatorName",
+      "title": "创建人名称",
+      "type": "string",
+      "description": "任务创建者昵称"
+    },
+    {
+      "name": "status",
+      "title": "任务状态",
+      "type": "string",
+      "description": "pending-待完成, in_progress-进行中, completed-已完成, cancelled-已取消"
+    },
+    {
+      "name": "points",
+      "title": "奖励积分",
+      "type": "number",
+      "description": "完成任务可获得积分"
+    },
+    {
+      "name": "dueDate",
+      "title": "截止日期",
+      "type": "datetime",
+      "description": "任务截止时间"
+    },
+    {
+      "name": "completedAt",
+      "title": "完成时间",
+      "type": "datetime",
+      "description": "任务完成时间"
+    },
+    {
+      "name": "priority",
+      "title": "优先级",
+      "type": "string",
+      "description": "low-低, medium-中, high-高"
+    },
+    {
+      "name": "category",
+      "title": "任务分类",
+      "type": "string",
+      "description": "任务分类：chore-家务, study-学习, health-健康, social-社交, other-其他"
+    },
+    {
+      "name": "createdAt",
+      "title": "创建时间",
+      "type": "datetime",
+      "description": "任务创建时间"
+    },
+    {
+      "name": "updatedAt",
+      "title": "更新时间",
+      "type": "datetime",
+      "description": "任务更新时间"
+    }
+  ]
+}

@@ -1,94 +1,76 @@
 {
   "name": "family_finance_records",
   "title": "家庭财务记录",
-  "description": "记录家庭收入支出明细",
+  "description": "记录家庭收支明细",
   "fields": [
     {
       "name": "familyGroupId",
-      "type": "string",
       "title": "家庭组ID",
+      "type": "string",
       "required": true
     },
     {
       "name": "userId",
-      "type": "string",
       "title": "用户ID",
+      "type": "string",
       "required": true
     },
     {
       "name": "nickname",
+      "title": "用户昵称",
       "type": "string",
-      "title": "用户昵称"
+      "required": true
     },
     {
       "name": "type",
+      "title": "类型",
       "type": "string",
-      "title": "收支类型",
-      "required": true,
-      "enum": ["income", "expense"]
+      "enum": ["income", "expense"],
+      "enumNames": ["收入", "支出"],
+      "required": true
     },
     {
       "name": "category",
-      "type": "string",
       "title": "分类",
+      "type": "string",
       "required": true
     },
     {
       "name": "amount",
-      "type": "number",
       "title": "金额",
+      "type": "number",
       "required": true
     },
     {
       "name": "description",
-      "type": "string",
-      "title": "描述"
+      "title": "描述",
+      "type": "string"
     },
     {
       "name": "recordDate",
-      "type": "datetime",
       "title": "记录日期",
+      "type": "datetime",
       "required": true
     },
     {
       "name": "paymentMethod",
-      "type": "string",
       "title": "支付方式",
-      "enum": ["cash", "wechat", "alipay", "card", "other"]
-    },
-    {
-      "name": "receiptImage",
       "type": "string",
-      "title": "票据图片"
+      "enum": ["cash", "wechat", "alipay", "bank", "other"],
+      "enumNames": ["现金", "微信", "支付宝", "银行卡", "其他"]
     },
     {
-      "name": "tags",
-      "type": "array",
-      "title": "标签"
+      "name": "receipt",
+      "title": "收据图片",
+      "type": "string"
     },
     {
-      "name": "isRecurring",
-      "type": "boolean",
-      "title": "是否周期性",
-      "default": false
-    },
-    {
-      "name": "recurringType",
+      "name": "status",
+      "title": "状态",
       "type": "string",
-      "title": "周期类型",
-      "enum": ["daily", "weekly", "monthly", "yearly"]
-    },
-    {
-      "name": "createdAt",
-      "type": "datetime",
-      "title": "创建时间",
-      "default": "now()"
-    },
-    {
-      "name": "updatedAt",
-      "type": "datetime",
-      "title": "更新时间",
-      "default": "now()"
+      "enum": ["pending", "confirmed", "cancelled"],
+      "enumNames": ["待确认", "已确认", "已取消"],
+      "default": "confirmed"
     }
   ]
 }

@@ -1,1 +1,84 @@
-[The data is outdated; Use the MultiRead tool to obtain the latest version.]
+{
+  "name": "family_events",
+  "schema": {
+    "_id": {
+      "type": "string",
+      "description": "事件ID"
+    },
+    "familyGroupId": {
+      "type": "string",
+      "description": "家庭组ID",
+      "required": true
+    },
+    "title": {
+      "type": "string",
+      "description": "事件标题",
+      "required": true
+    },
+    "description": {
+      "type": "string",
+      "description": "事件描述"
+    },
+    "startTime": {
+      "type": "datetime",
+      "description": "开始时间",
+      "required": true
+    },
+    "endTime": {
+      "type": "datetime",
+      "description": "结束时间",
+      "required": true
+    },
+    "location": {
+      "type": "string",
+      "description": "地点"
+    },
+    "category": {
+      "type": "string",
+      "description": "分类: meeting-会议, appointment-预约, reminder-提醒, birthday-生日, anniversary-纪念日, other-其他"
+    },
+    "color": {
+      "type": "string",
+      "description": "事件颜色"
+    },
+    "isAllDay": {
+      "type": "boolean",
+      "description": "是否全天事件",
+      "default": false
+    },
+    "repeatType": {
+      "type": "string",
+      "description": "重复类型: none-不重复, daily-每天, weekly-每周, monthly-每月, yearly-每年"
+    },
+    "repeatEndDate": {
+      "type": "datetime",
+      "description": "重复结束日期"
+    },
+    "repeatDays": {
+      "type": "string",
+      "description": "重复的星期几(逗号分隔,如1,3,5)"
+    },
+    "creatorId": {
+      "type": "string",
+      "description": "创建者ID",
+      "required": true
+    },
+    "creatorName": {
+      "type": "string",
+      "description": "创建者名称"
+    },
+    "status": {
+      "type": "string",
+      "description": "状态: active-正常, cancelled-已取消, completed-已完成",
+      "default": "active"
+    },
+    "createdAt": {
+      "type": "datetime",
+      "description": "创建时间"
+    },
+    "updatedAt": {
+      "type": "datetime",
+      "description": "更新时间"
+    }
+  }
+}

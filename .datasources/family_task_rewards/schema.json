@@ -1,0 +1,61 @@
+{
+  "name": "family_task_rewards",
+  "title": "任务奖励",
+  "description": "家庭任务奖励配置",
+  "columns": [
+    {
+      "name": "familyGroupId",
+      "title": "家庭组ID",
+      "type": "string",
+      "description": "关联的家庭组"
+    },
+    {
+      "name": "name",
+      "title": "奖励名称",
+      "type": "string",
+      "description": "奖励名称"
+    },
+    {
+      "name": "description",
+      "title": "奖励描述",
+      "type": "text",
+      "description": "奖励详细描述"
+    },
+    {
+      "name": "imageUrl",
+      "title": "奖励图片",
+      "type": "string",
+      "description": "奖励图片URL"
+    },
+    {
+      "name": "pointsRequired",
+      "title": "所需积分",
+      "type": "number",
+      "description": "兑换所需积分"
+    },
+    {
+      "name": "stock",
+      "title": "库存数量",
+      "type": "number",
+      "description": "奖励库存数量"
+    },
+    {
+      "name": "category",
+      "title": "奖励分类",
+      "type": "string",
+      "description": "奖励分类：privilege-特权, gift-实物, voucher-券, other-其他"
+    },
+    {
+      "name": "status",
+      "title": "状态",
+      "type": "string",
+      "description": "active-可用, inactive-不可用"
+    },
+    {
+      "name": "createdAt",
+      "title": "创建时间",
+      "type": "datetime",
+      "description": "奖励创建时间"
+    }
+  ]
+}
