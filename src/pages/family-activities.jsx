@@ -278,6 +278,13 @@ export default function FamilyActivities(props) {
         </div>
       </div>
     </div>;
+
+  // 加载状态
+  if (loading) {
+    return <div className="min-h-screen bg-gradient-to-br from-[#FCEEB8] via-[#FFEDD5] to-[#FFF8E7] flex items-center justify-center pb-24">
+        <Loader2 className="h-12 w-12 text-[#FF8B4E] animate-spin" />
+      </div>;
+  }
   return <div className="min-h-screen bg-gradient-to-br from-[#FCEEB8] via-[#FFEDD5] to-[#FFF8E7] pb-24">
       {/* 头部区域 */}
       <div className="bg-white rounded-b-3xl shadow-xl p-6 mb-6">
