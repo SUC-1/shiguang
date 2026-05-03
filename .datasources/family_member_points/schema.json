@@ -1,0 +1,47 @@
+{
+  "Name": "family_member_points",
+  "Description": "家庭成员积分表",
+  "DbInstanceType": "FLEXDB",
+  "Schema": {
+    "_id": {
+      "type": "string",
+      "description": "记录ID"
+    },
+    "familyGroupId": {
+      "type": "string",
+      "description": "家庭组ID"
+    },
+    "userId": {
+      "type": "string",
+      "description": "用户ID"
+    },
+    "userName": {
+      "type": "string",
+      "description": "用户名称"
+    },
+    "userAvatar": {
+      "type": "string",
+      "description": "用户头像"
+    },
+    "totalPoints": {
+      "type": "number",
+      "description": "总积分"
+    },
+    "availablePoints": {
+      "type": "number",
+      "description": "可用积分"
+    },
+    "spentPoints": {
+      "type": "number",
+      "description": "已消费积分"
+    },
+    "completedTasks": {
+      "type": "number",
+      "description": "已完成任务数"
+    },
+    "updatedAt": {
+      "type": "string",
+      "description": "更新时间"
+    }
+  }
+}

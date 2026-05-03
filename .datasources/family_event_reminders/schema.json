@@ -1,33 +1,54 @@
 {
   "name": "family_event_reminders",
-  "schema": {
-    "_id": {
+  "title": "事件提醒",
+  "description": "事件提醒设置表",
+  "columns": [
+    {
+      "name": "_id",
       "type": "string",
-      "description": "提醒ID"
+      "description": "唯一标识",
+      "isPrimary": true
     },
-    "eventId": {
+    {
+      "name": "eventId",
       "type": "string",
       "description": "事件ID",
-      "required": true
+      "isRequired": true
     },
-    "userId": {
+    {
+      "name": "userId",
       "type": "string",
       "description": "用户ID",
-      "required": true
+      "isRequired": true
     },
-    "reminderTime": {
+    {
+      "name": "reminderTime",
       "type": "datetime",
       "description": "提醒时间",
-      "required": true
+      "isRequired": true
     },
-    "isTriggered": {
+    {
+      "name": "reminderType",
+      "type": "string",
+      "description": "提醒类型: push/email/sms",
+      "default": "push"
+    },
+    {
+      "name": "isEnabled",
+      "type": "boolean",
+      "description": "是否启用",
+      "default": true
+    },
+    {
+      "name": "isTriggered",
       "type": "boolean",
       "description": "是否已触发",
       "default": false
     },
-    "createdAt": {
+    {
+      "name": "createdAt",
       "type": "datetime",
       "description": "创建时间"
     }
-  }
+  ]
 }

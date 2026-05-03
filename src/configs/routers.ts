@@ -11,12 +11,14 @@ import FAMILY_ACTIVITIES from '../pages/family-activities.jsx';
 import FAMILY_ACTIVITY-DETAIL from '../pages/family-activity-detail.jsx';
 import FAMILY_ACTIVITY-FORM from '../pages/family-activity-form.jsx';
 import FAMILY_ACTIVITY-PHOTOS from '../pages/family-activity-photos.jsx';
-import FAMILY_FINANCE from '../pages/family-finance.jsx';
-import FAMILY_BUDGET from '../pages/family-budget.jsx';
+import FAMILY_FINANCE-RECORDS from '../pages/family-finance-records.jsx';
+import FAMILY_FINANCE-BUDGET from '../pages/family-finance-budget.jsx';
 import FAMILY_FINANCE-REPORT from '../pages/family-finance-report.jsx';
 import FAMILY_TASKS from '../pages/family-tasks.jsx';
-import FAMILY_TASK-FORM from '../pages/family-task-form.jsx';
+import FAMILY_TASK-ASSIGN from '../pages/family-task-assign.jsx';
 import FAMILY_TASK-REWARDS from '../pages/family-task-rewards.jsx';
+import FAMILY_CALENDAR from '../pages/family-calendar.jsx';
+import FAMILY_EVENTS from '../pages/family-events.jsx';
 export const routers = [{
   id: "login",
   component: LOGIN
@@ -57,11 +59,11 @@ export const routers = [{
   id: "family-activity-photos",
   component: FAMILY_ACTIVITY-PHOTOS
 }, {
-  id: "family-finance",
-  component: FAMILY_FINANCE
+  id: "family-finance-records",
+  component: FAMILY_FINANCE-RECORDS
 }, {
-  id: "family-budget",
-  component: FAMILY_BUDGET
+  id: "family-finance-budget",
+  component: FAMILY_FINANCE-BUDGET
 }, {
   id: "family-finance-report",
   component: FAMILY_FINANCE-REPORT
@@ -69,9 +71,15 @@ export const routers = [{
   id: "family-tasks",
   component: FAMILY_TASKS
 }, {
-  id: "family-task-form",
-  component: FAMILY_TASK-FORM
+  id: "family-task-assign",
+  component: FAMILY_TASK-ASSIGN
 }, {
   id: "family-task-rewards",
   component: FAMILY_TASK-REWARDS
+}, {
+  id: "family-calendar",
+  component: FAMILY_CALENDAR
+}, {
+  id: "family-events",
+  component: FAMILY_EVENTS
 }]

@@ -1,84 +1,121 @@
 {
   "name": "family_events",
-  "schema": {
-    "_id": {
+  "title": "家庭日程",
+  "description": "家庭成员日程事件表",
+  "columns": [
+    {
+      "name": "_id",
       "type": "string",
-      "description": "事件ID"
+      "description": "唯一标识",
+      "isPrimary": true
     },
-    "familyGroupId": {
+    {
+      "name": "familyGroupId",
       "type": "string",
       "description": "家庭组ID",
-      "required": true
+      "isRequired": true
     },
-    "title": {
+    {
+      "name": "title",
       "type": "string",
       "description": "事件标题",
-      "required": true
+      "isRequired": true
     },
-    "description": {
+    {
+      "name": "description",
       "type": "string",
       "description": "事件描述"
     },
-    "startTime": {
+    {
+      "name": "creatorId",
+      "type": "string",
+      "description": "创建者ID",
+      "isRequired": true
+    },
+    {
+      "name": "creatorName",
+      "type": "string",
+      "description": "创建者名称"
+    },
+    {
+      "name": "creatorAvatar",
+      "type": "string",
+      "description": "创建者头像"
+    },
+    {
+      "name": "startTime",
       "type": "datetime",
       "description": "开始时间",
-      "required": true
+      "isRequired": true
     },
-    "endTime": {
+    {
+      "name": "endTime",
       "type": "datetime",
-      "description": "结束时间",
-      "required": true
+      "description": "结束时间"
     },
-    "location": {
+    {
+      "name": "location",
       "type": "string",
-      "description": "地点"
+      "description": "事件地点"
     },
-    "category": {
+    {
+      "name": "color",
       "type": "string",
-      "description": "分类: meeting-会议, appointment-预约, reminder-提醒, birthday-生日, anniversary-纪念日, other-其他"
+      "description": "事件颜色",
+      "default": "#FF8B4E"
     },
-    "color": {
-      "type": "string",
-      "description": "事件颜色"
-    },
-    "isAllDay": {
+    {
+      "name": "isAllDay",
       "type": "boolean",
       "description": "是否全天事件",
       "default": false
     },
-    "repeatType": {
+    {
+      "name": "repeatType",
       "type": "string",
-      "description": "重复类型: none-不重复, daily-每天, weekly-每周, monthly-每月, yearly-每年"
+      "description": "重复类型: none/daily/weekly/monthly",
+      "default": "none"
     },
-    "repeatEndDate": {
+    {
+      "name": "repeatDays",
+      "type": "string",
+      "description": "重复星期几(逗号分隔)"
+    },
+    {
+      "name": "repeatEndDate",
       "type": "datetime",
       "description": "重复结束日期"
     },
-    "repeatDays": {
-      "type": "string",
-      "description": "重复的星期几(逗号分隔,如1,3,5)"
+    {
+      "name": "reminderMinutes",
+      "type": "number",
+      "description": "提醒时间(分钟)"
     },
-    "creatorId": {
+    {
+      "name": "attendees",
       "type": "string",
-      "description": "创建者ID",
-      "required": true
+      "description": "参与者ID列表(JSON数组)"
     },
-    "creatorName": {
+    {
+      "name": "attendeeNames",
       "type": "string",
-      "description": "创建者名称"
+      "description": "参与者名称列表(JSON数组)"
     },
-    "status": {
+    {
+      "name": "status",
       "type": "string",
-      "description": "状态: active-正常, cancelled-已取消, completed-已完成",
+      "description": "状态: active/completed/cancelled",
       "default": "active"
     },
-    "createdAt": {
+    {
+      "name": "createdAt",
       "type": "datetime",
       "description": "创建时间"
     },
-    "updatedAt": {
+    {
+      "name": "updatedAt",
       "type": "datetime",
       "description": "更新时间"
     }
-  }
+  ]
 }

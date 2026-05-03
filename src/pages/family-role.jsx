@@ -1,11 +1,12 @@
 // @ts-ignore;
 import React, { useState, useEffect } from 'react';
 // @ts-ignore;
-import { Heart, ChefHat, ArrowRight, Users, Loader2, RefreshCw, Sparkles } from 'lucide-react';
+import { Heart, ChefHat, ArrowRight, Users, Loader2, RefreshCw } from 'lucide-react';
 // @ts-ignore;
 import { Button, useToast } from '@/components/ui';
 
-import { SkeletonCard, EmptyState, GradientButton } from '@/components/SkeletonCard';
+import { ActionCard } from '@/components/ActionCard';
+
 export default function FamilyRole(props) {
   const {
     navigateTo
@@ -357,45 +358,37 @@ export default function FamilyRole(props) {
 
   // 加载状态
   if (loading) {
-    return <div className="min-h-screen bg-gradient-to-br from-[#FCEEB8] via-[#FF8B4E] to-[#FF6B35] flex items-center justify-center p-6">
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#FCEEB8] via-[#FF8B4E] to-[#FF6B35] flex items-center justify-center p-6">
         <div className="flex flex-col items-center gap-4">
-          <div className="relative">
-            <div className="w-16 h-16 border-4 border-white/30 rounded-full"></div>
-            <div className="absolute top-0 left-0 w-16 h-16 border-4 border-white rounded-full border-t-transparent animate-spin"></div>
-          </div>
-          <p className="text-white text-lg font-semibold" style={{
-          fontFamily: 'Quicksand'
-        }}>加载中...</p>
+          <Loader2 className="h-12 w-12 text-white animate-spin" />
+          <p className="text-white text-lg font-semibold" style={{ fontFamily: 'Quicksand' }}>加载角色数据...</p>
         </div>
-      </div>;
-  }
+      </div>
+    );
   return <div className="min-h-screen bg-gradient-to-br from-[#FCEEB8] via-[#FF8B4E] to-[#FF6B35] flex items-center justify-center p-6">
       <div className="max-w-4xl w-full">
         <div className="text-center mb-8">
-          {/* 刷新按钮 */}
-          <div className="flex justify-end mb-4">
-            <button onClick={handleRefresh} className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition-colors">
-              <RefreshCw className="h-5 w-5 text-white" />
-            </button>
+          <div className="flex justify-center mb-4">
+            <Button 
+              className="bg-white/20 text-white border-2 border-white/30 h-10 px-4 rounded-xl hover:bg-white/30" 
+              onClick={handleRefresh}
+              title="刷新"
+            >
+              <RefreshCw className="h-5 w-5" />
+            </Button>
           </div>
-          
-          {/* 标题区域 */}
-          <div className="relative inline-block mb-4">
-            <div className="absolute -top-2 -right-2 w-8 h-8 bg-[#9CCF4E] rounded-full flex items-center justify-center animate-bounce">
-              <Sparkles className="h-4 w-4 text-white" />
-            </div>
-            <h1 className="text-4xl font-bold text-white mb-2" style={{
-            fontFamily: 'Quicksand'
-          }}>
-              温馨家庭
-            </h1>
-          </div>
-          <p className="text-lg text-white/90" style={{
+          <h1 className="text-3xl font-bold text-white mb-2" style={{
+          fontFamily: 'Quicksand'
+        }}>
+            温馨家庭
+          </h1>
+          <p className="text-lg text-white opacity-90" style={{
           fontFamily: 'Nunito'
         }}>
             请选择您的角色
           </p>
-          {currentUser.nickName && <p className="text-sm text-white/70 mt-2" style={{
+          {currentUser.nickName && <p className="text-sm text-white opacity-80 mt-2" style={{
           fontFamily: 'Nunito'
         }}>
               当前用户：{currentUser.nickName || currentUser.name}
@@ -409,11 +402,8 @@ export default function FamilyRole(props) {
           params: {}
         })} className="bg-white rounded-3xl shadow-2xl p-8 cursor-pointer hover:shadow-3xl transition-all hover:scale-105 group">
             <div className="flex flex-col items-center gap-4">
-              <div className="relative">
-                <div className="absolute -inset-2 bg-gradient-to-r from-[#FF8B4E] to-[#FF6B35] rounded-full opacity-30 group-hover:opacity-50 blur-lg transition-opacity"></div>
-                <div className="w-20 h-20 bg-gradient-to-br from-[#FF8B4E] to-[#FF6B35] rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform relative">
-                  <Heart className="h-10 w-10 text-white" />
-                </div>
+              <div className="w-20 h-20 bg-gradient-to-br from-[#FF8B4E] to-[#FF6B35] rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                <Heart className="h-10 w-10 text-white" />
               </div>
               <h2 className="text-2xl font-bold text-[#FF6B35]" style={{
               fontFamily: 'Quicksand'
@@ -433,13 +423,13 @@ export default function FamilyRole(props) {
                 </div> : <p className="text-sm text-[#8B7355]" style={{
               fontFamily: 'Nunito'
             }}>暂无注册成员</p>}
-              <div className="flex items-center gap-2 mt-4 group-hover:translate-x-2 transition-transform">
+              <div className="flex items-center gap-2 mt-4">
                 <span className="text-sm text-[#FF6B35] font-semibold" style={{
                 fontFamily: 'Nunito'
               }}>
                   进入点菜
                 </span>
-                <ArrowRight className="h-5 w-5 text-[#FF6B35]" />
+                <ArrowRight className="h-5 w-5 text-[#FF6B35] group-hover:translate-x-1 transition-transform" />
               </div>
             </div>
           </div>
@@ -450,11 +440,8 @@ export default function FamilyRole(props) {
           params: {}
         })} className="bg-white rounded-3xl shadow-2xl p-8 cursor-pointer hover:shadow-3xl transition-all hover:scale-105 group">
             <div className="flex flex-col items-center gap-4">
-              <div className="relative">
-                <div className="absolute -inset-2 bg-gradient-to-r from-[#9CCF4E] to-[#FF6B35] rounded-full opacity-30 group-hover:opacity-50 blur-lg transition-opacity"></div>
-                <div className="w-20 h-20 bg-gradient-to-br from-[#9CCF4E] to-[#FF6B35] rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform relative">
-                  <ChefHat className="h-10 w-10 text-white" />
-                </div>
+              <div className="w-20 h-20 bg-gradient-to-br from-[#9CCF4E] to-[#FF6B35] rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                <ChefHat className="h-10 w-10 text-white" />
               </div>
               <h2 className="text-2xl font-bold text-[#FF6B35]" style={{
               fontFamily: 'Quicksand'
@@ -474,13 +461,13 @@ export default function FamilyRole(props) {
                 </div> : <p className="text-sm text-[#8B7355]" style={{
               fontFamily: 'Nunito'
             }}>暂无注册大厨</p>}
-              <div className="flex items-center gap-2 mt-4 group-hover:translate-x-2 transition-transform">
+              <div className="flex items-center gap-2 mt-4">
                 <span className="text-sm text-[#FF6B35] font-semibold" style={{
                 fontFamily: 'Nunito'
               }}>
                   进入管理
                 </span>
-                <ArrowRight className="h-5 w-5 text-[#FF6B35]" />
+                <ArrowRight className="h-5 w-5 text-[#FF6B35] group-hover:translate-x-1 transition-transform" />
               </div>
             </div>
           </div>

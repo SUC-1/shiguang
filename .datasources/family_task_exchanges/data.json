@@ -1,0 +1,41 @@
+[
+  {
+    "_id": "exchange_001",
+    "familyGroupId": "fg_001",
+    "userId": "user_002",
+    "userName": "小明",
+    "userAvatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=xiaoming",
+    "rewardId": "reward_002",
+    "rewardName": "冰淇淋券",
+    "rewardImage": "https://images.unsplash.com/photo-1497034825429-c343d7c6a68f?w=400",
+    "pointsSpent": 50,
+    "status": "completed",
+    "exchangedAt": "2026-04-20T15:30:00Z"
+  },
+  {
+    "_id": "exchange_002",
+    "familyGroupId": "fg_001",
+    "userId": "user_002",
+    "userName": "小明",
+    "userAvatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=xiaoming",
+    "rewardId": "reward_003",
+    "rewardName": "多玩1小时游戏",
+    "rewardImage": "https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=400",
+    "pointsSpent": 80,
+    "status": "pending",
+    "exchangedAt": "2026-05-02T20:00:00Z"
+  },
+  {
+    "_id": "exchange_003",
+    "familyGroupId": "fg_001",
+    "userId": "user_004",
+    "userName": "爷爷",
+    "userAvatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=yeye",
+    "rewardId": "reward_001",
+    "rewardName": "周末电影之夜",
+    "rewardImage": "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=400",
+    "pointsSpent": 100,
+    "status": "completed",
+    "exchangedAt": "2026-04-15T18:00:00Z"
+  }
+]

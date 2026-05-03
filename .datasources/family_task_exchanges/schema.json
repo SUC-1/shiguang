@@ -1,0 +1,51 @@
+{
+  "Name": "family_task_exchanges",
+  "Description": "积分兑换记录表",
+  "DbInstanceType": "FLEXDB",
+  "Schema": {
+    "_id": {
+      "type": "string",
+      "description": "兑换记录ID"
+    },
+    "familyGroupId": {
+      "type": "string",
+      "description": "家庭组ID"
+    },
+    "userId": {
+      "type": "string",
+      "description": "兑换用户ID"
+    },
+    "userName": {
+      "type": "string",
+      "description": "兑换用户名称"
+    },
+    "userAvatar": {
+      "type": "string",
+      "description": "兑换用户头像"
+    },
+    "rewardId": {
+      "type": "string",
+      "description": "奖励ID"
+    },
+    "rewardName": {
+      "type": "string",
+      "description": "奖励名称"
+    },
+    "rewardImage": {
+      "type": "string",
+      "description": "奖励图片"
+    },
+    "pointsSpent": {
+      "type": "number",
+      "description": "消耗积分"
+    },
+    "status": {
+      "type": "string",
+      "description": "状态: pending-待领取, completed-已领取, cancelled-已取消"
+    },
+    "exchangedAt": {
+      "type": "string",
+      "description": "兑换时间"
+    }
+  }
+}

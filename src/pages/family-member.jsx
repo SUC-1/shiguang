@@ -3,12 +3,13 @@ import React, { useState, useEffect } from 'react';
 // @ts-ignore;
 import { useToast, Button, Input } from '@/components/ui';
 // @ts-ignore;
-import { ShoppingCart, Search, Heart, MessageSquare, Expand, Check, X, ChefHat, Sparkles, Loader2, Users, RefreshCw, Filter } from 'lucide-react';
+import { ShoppingCart, Search, Heart, MessageSquare, Expand, Check, X, ChefHat, Sparkles, Loader2, Users, RefreshCw, AlertCircle } from 'lucide-react';
 
 // @ts-ignore;
 import TabBar from '@/components/TabBar';
-import { SkeletonCard, EmptyState, StatCard, GradientButton } from '@/components/SkeletonCard';
-import { MemberAvatar, MemberAvatarGroup } from '@/components/MemberCard';
+import { EmptyState } from '@/components/EmptyState';
+import { ActionCard } from '@/components/ActionCard';
+
 export default function FamilyMember(props) {
   const {
     toast
@@ -417,64 +418,57 @@ export default function FamilyMember(props) {
 
   // 加载状态
   if (loading) {
-    return <div className="min-h-screen bg-gradient-to-br from-[#FCEEB8] via-[#FF8B4E] to-[#FF6B35] flex items-center justify-center pb-20">
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#FCEEB8] via-[#FF8B4E] to-[#FF6B35] flex items-center justify-center pb-20">
         <div className="flex flex-col items-center gap-4">
-          <div className="relative">
-            <div className="w-16 h-16 border-4 border-white/30 rounded-full"></div>
-            <div className="absolute top-0 left-0 w-16 h-16 border-4 border-white rounded-full border-t-transparent animate-spin"></div>
-          </div>
-          <p className="text-white text-lg font-semibold" style={{
-          fontFamily: 'Quicksand'
-        }}>加载中...</p>
+          <Loader2 className="h-12 w-12 text-white animate-spin" />
+          <p className="text-white text-lg font-semibold" style={{ fontFamily: 'Quicksand' }}>加载数据中...</p>
         </div>
-      </div>;
-  }
+      </div>
+    );
   return <div className="min-h-screen bg-gradient-to-br from-[#FCEEB8] via-[#FF8B4E] to-[#FF6B35] pb-20">
       <div className="max-w-6xl mx-auto p-6">
         {/* 头部区域 */}
         <div className="bg-white rounded-3xl shadow-xl p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <div className="relative">
-                <div className="absolute -inset-1 bg-gradient-to-r from-[#FF8B4E] to-[#FF6B35] rounded-full opacity-30"></div>
-                <Heart className="h-10 w-10 text-[#FF8B4E] relative" />
-              </div>
+              <Heart className="h-10 w-10 text-[#FF8B4E]" />
               <h1 className="text-2xl font-bold text-[#FF6B35]" style={{
               fontFamily: 'Quicksand'
             }}>温馨家庭 - 点菜</h1>
             </div>
-            <div className="flex items-center gap-4">
-              {/* 刷新按钮 */}
-              <Button variant="outline" size="icon" className="rounded-xl border-[#FF8B4E] text-[#FF8B4E] hover:bg-[#FF8B4E] hover:text-white" onClick={handleRefresh}>
+            <div className="flex items-center gap-3">
+              <Button 
+                className="bg-white text-[#FF8B4E] border-2 border-[#FF8B4E] h-10 px-3 rounded-xl hover:bg-[#FFF5F0]" 
+                onClick={handleRefresh}
+                title="刷新"
+              >
                 <RefreshCw className="h-5 w-5" />
               </Button>
-              
               {userPermissions && <div className="flex items-center gap-2 text-sm text-[#8B7355]" style={{
               fontFamily: 'Nunito'
             }}>
-                  <span>角色: {userPermissions.role}</span>
-                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${userPermissions.hasPermission ? 'bg-[#9CCF4E] text-white' : 'bg-[#E85A42] text-white'}`}>
-                    {userPermissions.hasPermission ? '有权限' : '无权限'}
-                  </span>
-                </div>}
-              <div className="relative">
-                <ShoppingCart className="h-6 w-6 text-[#FF8B4E]" />
-                {selectedDishes.length > 0 && <span className="absolute -top-2 -right-2 w-5 h-5 bg-[#E85A42] text-white text-xs rounded-full flex items-center justify-center">
-                    {selectedDishes.length}
-                  </span>}
-              </div>
+                <span>角色: {userPermissions.role}</span>
+                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${userPermissions.hasPermission ? 'bg-[#9CCF4E] text-white' : 'bg-[#E85A42] text-white'}`}>
+                  {userPermissions.hasPermission ? '有权限' : '无权限'}
+                </span>
+              </div>}
+              <ShoppingCart className="h-6 w-6 text-[#FF8B4E]" />
+              <span className="text-lg font-semibold text-[#FF6B35]" style={{
+              fontFamily: 'Quicksand'
+            }}>已选: {selectedDishes.length}</span>
             </div>
           </div>
           
-          {/* 权限提示 */}
-          {userPermissions && !userPermissions.hasPermission && <div className="bg-[#FCEEB8] rounded-xl p-4 mb-4 border-2 border-[#FF8B4E]">
+          {/* 权限提示 - 优化样式 */}
+          {userPermissions && !userPermissions.hasPermission && <div className="bg-gradient-to-r from-[#FFF5F0] to-[#FCEEB8] rounded-xl p-4 mb-4 border-2 border-[#FF8B4E] shadow-sm">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-[#E85A42] rounded-full flex items-center justify-center">
-                    <span className="text-white text-sm font-bold">!</span>
+                  <div className="w-10 h-10 bg-[#E85A42] rounded-full flex items-center justify-center shadow-md">
+                    <AlertCircle className="h-5 w-5 text-white" />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-[#FF6B35]" style={{
+                    <p className="text-sm font-bold text-[#FF6B35]" style={{
                   fontFamily: 'Quicksand'
                 }}>当前权限不足</p>
                     <p className="text-xs text-[#8B7355]" style={{
@@ -482,7 +476,7 @@ export default function FamilyMember(props) {
                 }}>您需要申请点菜权限才能使用此功能</p>
                   </div>
                 </div>
-                <Button className="bg-[#FF8B4E] text-white h-8 px-4 rounded-xl text-sm font-bold" onClick={() => setShowPermissionRequest(true)}>
+                <Button className="bg-[#FF8B4E] text-white h-10 px-4 rounded-xl font-bold hover:bg-[#FF6B35] shadow-md hover:shadow-lg transition-all" onClick={() => setShowPermissionRequest(true)}>
                   申请权限
                 </Button>
               </div>

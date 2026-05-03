@@ -1,0 +1,62 @@
+[
+  {
+    "_id": "points_001",
+    "familyGroupId": "fg_001",
+    "userId": "user_001",
+    "userName": "爸爸",
+    "userAvatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=baba",
+    "totalPoints": 150,
+    "availablePoints": 125,
+    "spentPoints": 25,
+    "completedTasks": 8,
+    "updatedAt": "2026-05-03T21:00:00Z"
+  },
+  {
+    "_id": "points_002",
+    "familyGroupId": "fg_001",
+    "userId": "user_002",
+    "userName": "小明",
+    "userAvatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=xiaoming",
+    "totalPoints": 180,
+    "availablePoints": 50,
+    "spentPoints": 130,
+    "completedTasks": 12,
+    "updatedAt": "2026-05-03T20:00:00Z"
+  },
+  {
+    "_id": "points_003",
+    "familyGroupId": "fg_001",
+    "userId": "user_003",
+    "userName": "妈妈",
+    "userAvatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=mama",
+    "totalPoints": 120,
+    "availablePoints": 120,
+    "spentPoints": 0,
+    "completedTasks": 6,
+    "updatedAt": "2026-05-03T19:00:00Z"
+  },
+  {
+    "_id": "points_004",
+    "familyGroupId": "fg_001",
+    "userId": "user_004",
+    "userName": "爷爷",
+    "userAvatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=yeye",
+    "totalPoints": 90,
+    "availablePoints": 0,
+    "spentPoints": 90,
+    "completedTasks": 5,
+    "updatedAt": "2026-05-03T18:00:00Z"
+  },
+  {
+    "_id": "points_005",
+    "familyGroupId": "fg_001",
+    "userId": "user_005",
+    "userName": "奶奶",
+    "userAvatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=nainai",
+    "totalPoints": 60,
+    "availablePoints": 60,
+    "spentPoints": 0,
+    "completedTasks": 3,
+    "updatedAt": "2026-05-03T17:00:00Z"
+  }
+]

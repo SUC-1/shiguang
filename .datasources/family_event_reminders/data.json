@@ -1,1 +1,32 @@
-[]
+[
+  {
+    "_id": "rem_001",
+    "eventId": "evt_001",
+    "userId": "user_001",
+    "reminderTime": "2026-05-04T17:00:00Z",
+    "reminderType": "push",
+    "isEnabled": true,
+    "isTriggered": false,
+    "createdAt": "2026-05-01T10:00:00Z"
+  },
+  {
+    "_id": "rem_002",
+    "eventId": "evt_002",
+    "userId": "user_002",
+    "reminderTime": "2026-05-05T15:30:00Z",
+    "reminderType": "push",
+    "isEnabled": true,
+    "isTriggered": false,
+    "createdAt": "2026-05-01T10:00:00Z"
+  },
+  {
+    "_id": "rem_003",
+    "eventId": "evt_003",
+    "userId": "user_001",
+    "reminderTime": "2026-05-06T07:00:00Z",
+    "reminderType": "push",
+    "isEnabled": true,
+    "isTriggered": false,
+    "createdAt": "2026-05-01T10:00:00Z"
+  }
+]

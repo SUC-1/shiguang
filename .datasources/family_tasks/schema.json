@@ -1,103 +1,71 @@
 {
-  "name": "family_tasks",
-  "title": "家庭任务",
-  "description": "家庭成员任务管理",
-  "columns": [
-    {
-      "name": "familyGroupId",
-      "title": "家庭组ID",
+  "Name": "family_tasks",
+  "Description": "家庭任务表",
+  "DbInstanceType": "FLEXDB",
+  "Schema": {
+    "_id": {
       "type": "string",
-      "description": "关联的家庭组"
+      "description": "任务ID"
     },
-    {
-      "name": "title",
-      "title": "任务标题",
+    "familyGroupId": {
       "type": "string",
-      "description": "任务名称"
+      "description": "家庭组ID"
     },
-    {
-      "name": "description",
-      "title": "任务描述",
-      "type": "text",
-      "description": "任务详细描述"
-    },
-    {
-      "name": "assigneeId",
-      "title": "分配人ID",
+    "title": {
       "type": "string",
-      "description": "任务分配给的用户ID"
+      "description": "任务标题"
     },
-    {
-      "name": "assigneeName",
-      "title": "分配人名称",
+    "description": {
       "type": "string",
-      "description": "任务分配人昵称"
+      "description": "任务描述"
     },
-    {
-      "name": "assigneeAvatar",
-      "title": "分配人头像",
+    "assigneeId": {
       "type": "string",
-      "description": "任务分配人头像URL"
+      "description": "执行人ID"
     },
-    {
-      "name": "creatorId",
-      "title": "创建人ID",
+    "assigneeName": {
       "type": "string",
-      "description": "任务创建者ID"
+      "description": "执行人名称"
     },
-    {
-      "name": "creatorName",
-      "title": "创建人名称",
+    "assigneeAvatar": {
       "type": "string",
-      "description": "任务创建者昵称"
+      "description": "执行人头像"
     },
-    {
-      "name": "status",
-      "title": "任务状态",
+    "creatorId": {
       "type": "string",
-      "description": "pending-待完成, in_progress-进行中, completed-已完成, cancelled-已取消"
+      "description": "创建人ID"
     },
-    {
-      "name": "points",
-      "title": "奖励积分",
+    "creatorName": {
+      "type": "string",
+      "description": "创建人名称"
+    },
+    "dueDate": {
+      "type": "string",
+      "description": "截止日期"
+    },
+    "status": {
+      "type": "string",
+      "description": "状态: pending-待处理, in_progress-进行中, completed-已完成, cancelled-已取消"
+    },
+    "priority": {
+      "type": "string",
+      "description": "优先级: low-低, medium-中, high-高"
+    },
+    "points": {
       "type": "number",
-      "description": "完成任务可获得积分"
+      "description": "奖励积分"
     },
-    {
-      "name": "dueDate",
-      "title": "截止日期",
-      "type": "datetime",
-      "description": "任务截止时间"
-    },
-    {
-      "name": "completedAt",
-      "title": "完成时间",
-      "type": "datetime",
-      "description": "任务完成时间"
-    },
-    {
-      "name": "priority",
-      "title": "优先级",
+    "completedAt": {
       "type": "string",
-      "description": "low-低, medium-中, high-高"
+      "description": "完成时间"
     },
-    {
-      "name": "category",
-      "title": "任务分类",
+    "createdAt": {
       "type": "string",
-      "description": "任务分类：chore-家务, study-学习, health-健康, social-社交, other-其他"
+      "description": "创建时间"
     },
-    {
-      "name": "createdAt",
-      "title": "创建时间",
-      "type": "datetime",
-      "description": "任务创建时间"
-    },
-    {
-      "name": "updatedAt",
-      "title": "更新时间",
-      "type": "datetime",
-      "description": "任务更新时间"
+    "updatedAt": {
+      "type": "string",
+      "description": "更新时间"
     }
-  ]
+  }
 }

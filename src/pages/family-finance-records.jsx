@@ -1,632 +1,450 @@
 // @ts-ignore;
 import React, { useState, useEffect } from 'react';
 // @ts-ignore;
-import { useToast, Button, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Form, FormControl, FormField, FormItem, FormLabel, FormMessage, Textarea } from '@/components/ui';
+import { Button, Input, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription, useToast } from '@/components/ui';
 // @ts-ignore;
-import { Wallet as WalletIcon, TrendingUp, TrendingDown, Plus, Search, Filter, Calendar, Tag, CreditCard, MoreHorizontal, ChevronLeft, ChevronRight, UtensilsCrossed, Car, ShoppingBag, GraduationCap, Heart, Gamepad2, Zap, Phone, Gift, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { Calendar, TrendingUp, TrendingDown, Plus, Filter, Search, ArrowUpRight, ArrowDownRight, Wallet, PiggyBank, X, DollarSign } from 'lucide-react';
 
-import { useForm } from 'react-hook-form';
-
-// 图标映射
-const iconMap = {
-  UtensilsCrossed,
-  Car,
-  ShoppingBag,
-  GraduationCap,
-  Heart,
-  Gamepad2,
-  Zap,
-  Phone,
-  Gift,
-  WalletIcon,
-  MoreHorizontal,
-  TrendingUp
+// 模拟数据
+const mockRecords = [{
+  id: '1',
+  type: 'income',
+  amount: 5000,
+  category: '工资',
+  date: '2026-05-01',
+  notes: '月工资',
+  member: '爸爸',
+  createdAt: '2026-05-01T10:00:00'
+}, {
+  id: '2',
+  type: 'expense',
+  amount: 1200,
+  category: '餐饮',
+  date: '2026-05-02',
+  notes: '家庭聚餐',
+  member: '妈妈',
+  createdAt: '2026-05-02T18:30:00'
+}, {
+  id: '3',
+  type: 'expense',
+  amount: 800,
+  category: '教育',
+  date: '2026-05-03',
+  notes: '兴趣班费用',
+  member: '爸爸',
+  createdAt: '2026-05-03T15:20:00'
+}, {
+  id: '4',
+  type: 'income',
+  amount: 300,
+  category: '理财',
+  date: '2026-05-03',
+  notes: '理财收益',
+  member: '妈妈',
+  createdAt: '2026-05-03T09:00:00'
+}, {
+  id: '5',
+  type: 'expense',
+  amount: 450,
+  category: '交通',
+  date: '2026-05-01',
+  notes: '油费',
+  member: '爸爸',
+  createdAt: '2026-05-01T14:00:00'
+}, {
+  id: '6',
+  type: 'expense',
+  amount: 2000,
+  category: '房租',
+  date: '2026-05-01',
+  notes: '月租',
+  member: '妈妈',
+  createdAt: '2026-05-01T08:00:00'
+}, {
+  id: '7',
+  type: 'income',
+  amount: 500,
+  category: '红包',
+  date: '2026-04-30',
+  notes: '生日红包',
+  member: '爷爷',
+  createdAt: '2026-04-30T20:00:00'
+}, {
+  id: '8',
+  type: 'expense',
+  amount: 350,
+  category: '医疗',
+  date: '2026-04-28',
+  notes: '感冒药',
+  member: '宝宝',
+  createdAt: '2026-04-28T11:00:00'
+}];
+const categories = {
+  income: ['工资', '奖金', '理财', '红包', '兼职', '其他收入'],
+  expense: ['餐饮', '交通', '教育', '房租', '医疗', '购物', '娱乐', '通讯', '其他支出']
 };
+const members = ['爸爸', '妈妈', '爷爷', '奶奶', '宝宝'];
 export default function FamilyFinanceRecords(props) {
   const {
     toast
   } = useToast();
   const {
     navigateTo,
-    navigateBack
+    navigateBack,
+    page
   } = props.$w.utils;
-  const currentUser = props.$w.auth.currentUser || {};
-  const [records, setRecords] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const currentUser = props.$w.auth.currentUser;
+  const [records, setRecords] = useState(mockRecords);
+  const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
-  const [dateFilter, setDateFilter] = useState('thisMonth');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [familyGroupId, setFamilyGroupId] = useState(null);
-  const [summary, setSummary] = useState({
-    income: 0,
-    expense: 0,
-    balance: 0
-  });
-  const form = useForm({
-    defaultValues: {
-      type: 'expense',
-      category: '',
-      amount: '',
-      description: '',
-      recordDate: new Date().toISOString().split('T')[0],
-      paymentMethod: 'wechat'
-    }
+  const [editingRecord, setEditingRecord] = useState(null);
+  const [formData, setFormData] = useState({
+    type: 'expense',
+    amount: '',
+    category: '',
+    date: new Date().toISOString().split('T')[0],
+    notes: '',
+    member: ''
   });
 
-  // 获取当前用户的家庭组
-  const fetchFamilyGroup = async () => {
-    try {
-      const result = await props.$w.cloud.callDataSource({
-        dataSourceName: 'family_memberships',
-        methodName: 'wedaGetRecordsV2',
-        params: {
-          filter: {
-            where: {
-              $and: [{
-                userId: {
-                  $eq: currentUser.userId
-                }
-              }, {
-                status: {
-                  $eq: 'active'
-                }
-              }]
-            }
-          },
-          select: {
-            $master: true
-          },
-          getCount: true,
-          pageSize: 1,
-          pageNumber: 1
-        }
-      });
-      if (result?.records?.length > 0) {
-        setFamilyGroupId(result.records[0].familyGroupId);
-        return result.records[0].familyGroupId;
-      }
-      return null;
-    } catch (error) {
-      console.error('获取家庭组失败:', error);
-      return null;
-    }
-  };
+  // 计算统计数据
+  const totalIncome = records.filter(r => r.type === 'income').reduce((sum, r) => sum + r.amount, 0);
+  const totalExpense = records.filter(r => r.type === 'expense').reduce((sum, r) => sum + r.amount, 0);
+  const balance = totalIncome - totalExpense;
 
-  // 获取分类列表
-  const fetchCategories = async groupId => {
-    try {
-      const result = await props.$w.cloud.callDataSource({
-        dataSourceName: 'finance_categories',
-        methodName: 'wedaGetRecordsV2',
-        params: {
-          filter: {
-            where: {
-              $and: [{
-                familyGroupId: {
-                  $eq: groupId
-                }
-              }, {
-                isActive: {
-                  $eq: true
-                }
-              }]
-            }
-          },
-          orderBy: [{
-            sortOrder: 'asc'
-          }],
-          select: {
-            $master: true
-          },
-          getCount: true,
-          pageSize: 100,
-          pageNumber: 1
-        }
-      });
-      if (result?.records) {
-        setCategories(result.records.map(c => ({
-          id: c._id,
-          name: c.name,
-          type: c.type,
-          icon: c.icon,
-          color: c.color
-        })));
-      }
-    } catch (error) {
-      console.error('获取分类失败:', error);
-    }
-  };
+  // 筛选记录
+  const filteredRecords = records.filter(record => {
+    const matchSearch = record.notes.toLowerCase().includes(searchQuery.toLowerCase()) || record.category.includes(searchQuery) || record.member.includes(searchQuery);
+    const matchType = typeFilter === 'all' || record.type === typeFilter;
+    const matchCategory = categoryFilter === 'all' || record.category === categoryFilter;
+    return matchSearch && matchType && matchCategory;
+  });
 
-  // 获取收支记录
-  const fetchRecords = async groupId => {
-    try {
-      const targetGroupId = groupId || familyGroupId;
-      if (!targetGroupId) return;
-
-      // 构建日期筛选条件
-      let dateCondition = {};
-      const now = new Date();
-      if (dateFilter === 'today') {
-        const today = now.toISOString().split('T')[0];
-        dateCondition = {
-          recordDate: {
-            $gte: `${today}T00:00:00Z`,
-            $lte: `${today}T23:59:59Z`
-          }
-        };
-      } else if (dateFilter === 'thisWeek') {
-        const weekStart = new Date(now.setDate(now.getDate() - now.getDay()));
-        dateCondition = {
-          recordDate: {
-            $gte: weekStart.toISOString()
-          }
-        };
-      } else if (dateFilter === 'thisMonth') {
-        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-        dateCondition = {
-          recordDate: {
-            $gte: monthStart.toISOString()
-          }
-        };
-      }
-      const result = await props.$w.cloud.callDataSource({
-        dataSourceName: 'family_finance_records',
-        methodName: 'wedaGetRecordsV2',
-        params: {
-          filter: {
-            where: {
-              $and: [{
-                familyGroupId: {
-                  $eq: targetGroupId
-                }
-              }, ...(typeFilter !== 'all' ? [{
-                type: {
-                  $eq: typeFilter
-                }
-              }] : []), ...(categoryFilter !== 'all' ? [{
-                category: {
-                  $eq: categoryFilter
-                }
-              }] : []), ...(dateFilter !== 'all' ? [dateCondition] : [])]
-            }
-          },
-          orderBy: [{
-            recordDate: 'desc'
-          }],
-          select: {
-            $master: true
-          },
-          getCount: true,
-          pageSize: 100,
-          pageNumber: 1
-        }
-      });
-      if (result?.records) {
-        const recordList = result.records.map(r => ({
-          id: r._id,
-          type: r.type,
-          category: r.category,
-          amount: r.amount,
-          description: r.description,
-          recordDate: r.recordDate,
-          paymentMethod: r.paymentMethod,
-          nickname: r.nickname,
-          tags: r.tags || []
-        }));
-        setRecords(recordList);
-
-        // 计算汇总
-        const income = recordList.filter(r => r.type === 'income').reduce((sum, r) => sum + r.amount, 0);
-        const expense = recordList.filter(r => r.type === 'expense').reduce((sum, r) => sum + r.amount, 0);
-        setSummary({
-          income,
-          expense,
-          balance: income - expense
-        });
-      }
-    } catch (error) {
-      console.error('获取收支记录失败:', error);
+  // 添加/编辑记录
+  const handleSubmit = async () => {
+    if (!formData.amount || !formData.category || !formData.member) {
       toast({
         variant: 'destructive',
-        title: '获取记录失败',
-        description: error.message
+        title: '提交失败',
+        description: '请填写完整信息'
       });
+      return;
     }
-  };
-
-  // 添加收支记录
-  const onSubmit = async data => {
+    setLoading(true);
     try {
-      if (!familyGroupId) {
+      // 模拟API调用
+      await new Promise(resolve => setTimeout(resolve, 500));
+      const newRecord = {
+        id: editingRecord?.id || Date.now().toString(),
+        ...formData,
+        amount: parseFloat(formData.amount),
+        createdAt: editingRecord?.createdAt || new Date().toISOString()
+      };
+      if (editingRecord) {
+        setRecords(records.map(r => r.id === editingRecord.id ? newRecord : r));
         toast({
-          variant: 'destructive',
-          title: '添加失败',
-          description: '未找到家庭组信息'
+          title: '记录已更新'
         });
-        return;
+      } else {
+        setRecords([newRecord, ...records]);
+        toast({
+          title: '记录已添加'
+        });
       }
-      await props.$w.cloud.callDataSource({
-        dataSourceName: 'family_finance_records',
-        methodName: 'wedaCreateV2',
-        params: {
-          data: {
-            familyGroupId: familyGroupId,
-            userId: currentUser.userId,
-            nickname: currentUser.nickName || currentUser.name || '匿名用户',
-            type: data.type,
-            category: data.category,
-            amount: parseFloat(data.amount),
-            description: data.description,
-            recordDate: new Date(data.recordDate).toISOString(),
-            paymentMethod: data.paymentMethod,
-            tags: [],
-            isRecurring: false
-          }
-        }
-      });
-      toast({
-        variant: 'default',
-        title: '添加成功',
-        description: '收支记录已保存'
-      });
       setIsAddDialogOpen(false);
-      form.reset();
-      await fetchRecords();
+      setEditingRecord(null);
+      setFormData({
+        type: 'expense',
+        amount: '',
+        category: '',
+        date: new Date().toISOString().split('T')[0],
+        notes: '',
+        member: ''
+      });
     } catch (error) {
       toast({
         variant: 'destructive',
-        title: '添加失败',
+        title: '操作失败',
         description: error.message
       });
-    }
-  };
-
-  // 页面初始化
-  useEffect(() => {
-    const loadData = async () => {
-      setLoading(true);
-      const groupId = await fetchFamilyGroup();
-      if (groupId) {
-        await Promise.all([fetchCategories(groupId), fetchRecords(groupId)]);
-      }
+    } finally {
       setLoading(false);
-    };
-    loadData();
-  }, []);
-
-  // 筛选条件变化时重新获取数据
-  useEffect(() => {
-    if (familyGroupId) {
-      fetchRecords();
     }
-  }, [typeFilter, categoryFilter, dateFilter]);
-
-  // 获取分类图标
-  const getCategoryIcon = (categoryName, type) => {
-    const category = categories.find(c => c.name === categoryName && c.type === type);
-    const IconComponent = iconMap[category?.icon] || MoreHorizontal;
-    return <IconComponent className="h-4 w-4" style={{
-      color: category?.color || '#95A5A6'
-    }} />;
   };
 
-  // 获取分类颜色
-  const getCategoryColor = (categoryName, type) => {
-    const category = categories.find(c => c.name === categoryName && c.type === type);
-    return category?.color || '#95A5A6';
+  // 删除记录
+  const handleDelete = id => {
+    setRecords(records.filter(r => r.id !== id));
+    toast({
+      title: '记录已删除'
+    });
+  };
+
+  // 打开编辑对话框
+  const openEditDialog = record => {
+    setEditingRecord(record);
+    setFormData({
+      type: record.type,
+      amount: record.amount.toString(),
+      category: record.category,
+      date: record.date,
+      notes: record.notes,
+      member: record.member
+    });
+    setIsAddDialogOpen(true);
   };
 
   // 格式化金额
   const formatAmount = amount => {
     return new Intl.NumberFormat('zh-CN', {
       style: 'currency',
-      currency: 'CNY',
-      minimumFractionDigits: 2
+      currency: 'CNY'
     }).format(amount);
   };
+  return <div className="min-h-screen bg-[#0F0F1A] text-white pb-20" style={{
+    fontFamily: 'Nunito, sans-serif'
+  }}>
+      {/* 头部统计 */}
+      <div className="bg-gradient-to-br from-[#1A1A2E] to-[#16213E] p-6 rounded-b-3xl shadow-2xl">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold" style={{
+          fontFamily: 'Playfair Display, serif'
+        }}>
+            收支记录
+          </h1>
+          <Button className="bg-[#FF8B4E] hover:bg-[#FF6B35] rounded-xl h-10" onClick={() => {
+          setEditingRecord(null);
+          setFormData({
+            type: 'expense',
+            amount: '',
+            category: '',
+            date: new Date().toISOString().split('T')[0],
+            notes: '',
+            member: ''
+          });
+          setIsAddDialogOpen(true);
+        }}>
+            <Plus className="h-5 w-5 mr-1" />
+            添加
+          </Button>
+        </div>
 
-  // 格式化日期
-  const formatDate = dateString => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('zh-CN', {
-      month: 'short',
-      day: 'numeric'
-    });
-  };
-
-  // 支付方式图标
-  const getPaymentMethodIcon = method => {
-    switch (method) {
-      case 'wechat':
-        return <span className="text-[#07C160] text-xs">微信</span>;
-      case 'alipay':
-        return <span className="text-[#1677FF] text-xs">支付宝</span>;
-      case 'cash':
-        return <span className="text-[#8B7355] text-xs">现金</span>;
-      case 'card':
-        return <span className="text-[#FF6B35] text-xs">银行卡</span>;
-      default:
-        return <span className="text-gray-500 text-xs">其他</span>;
-    }
-  };
-  return <div className="min-h-screen bg-gradient-to-br from-[#FF8B4E]/5 via-[#FCEEB8]/10 to-[#9CCF4E]/5 pb-24">
-      {/* 头部 */}
-      <div className="bg-gradient-to-r from-[#FF8B4E] to-[#FF6B35] rounded-b-[2rem] shadow-lg">
-        <div className="px-6 pt-12 pb-8">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" className="text-white h-10 w-10 p-0 rounded-full hover:bg-white/20" onClick={() => navigateBack()}>
-                <ChevronLeft className="h-6 w-6" />
-              </Button>
-              <h1 className="text-2xl font-bold text-white" style={{
-              fontFamily: 'Quicksand'
-            }}>
-                收支记录
-              </h1>
-            </div>
-            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-              <DialogTrigger asChild>
-                <Button className="bg-white text-[#FF6B35] h-10 px-4 rounded-xl font-bold hover:bg-[#FCEEB8]">
-                  <Plus className="h-5 w-5 mr-1" />
-                  记一笔
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle className="text-xl font-bold text-[#FF6B35]">记一笔</DialogTitle>
-                </DialogHeader>
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">
-                    <FormField control={form.control} name="type" render={({
-                    field
-                  }) => <FormItem>
-                          <FormLabel>类型</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="选择类型" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="expense">
-                                <span className="flex items-center gap-2">
-                                  <TrendingDown className="h-4 w-4 text-[#E85A42]" />
-                                  支出
-                                </span>
-                              </SelectItem>
-                              <SelectItem value="income">
-                                <span className="flex items-center gap-2">
-                                  <TrendingUp className="h-4 w-4 text-[#9CCF4E]" />
-                                  收入
-                                </span>
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>} />
-
-                    <FormField control={form.control} name="category" render={({
-                    field
-                  }) => <FormItem>
-                          <FormLabel>分类</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="选择分类" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {categories.filter(c => c.type === form.watch('type')).map(c => <SelectItem key={c.id} value={c.name}>
-                                    <span className="flex items-center gap-2">
-                                      {React.createElement(iconMap[c.icon] || MoreHorizontal, {
-                              className: 'h-4 w-4',
-                              style: {
-                                color: c.color
-                              }
-                            })}
-                                      {c.name}
-                                    </span>
-                                  </SelectItem>)}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>} />
-
-                    <FormField control={form.control} name="amount" render={({
-                    field
-                  }) => <FormItem>
-                          <FormLabel>金额</FormLabel>
-                          <FormControl>
-                            <Input type="number" step="0.01" placeholder="请输入金额" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>} />
-
-                    <FormField control={form.control} name="recordDate" render={({
-                    field
-                  }) => <FormItem>
-                          <FormLabel>日期</FormLabel>
-                          <FormControl>
-                            <Input type="date" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>} />
-
-                    <FormField control={form.control} name="paymentMethod" render={({
-                    field
-                  }) => <FormItem>
-                          <FormLabel>支付方式</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="选择支付方式" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="wechat">微信支付</SelectItem>
-                              <SelectItem value="alipay">支付宝</SelectItem>
-                              <SelectItem value="cash">现金</SelectItem>
-                              <SelectItem value="card">银行卡</SelectItem>
-                              <SelectItem value="other">其他</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>} />
-
-                    <FormField control={form.control} name="description" render={({
-                    field
-                  }) => <FormItem>
-                          <FormLabel>描述</FormLabel>
-                          <FormControl>
-                            <Textarea placeholder="请输入描述（选填）" className="resize-none" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>} />
-
-                    <Button type="submit" className="w-full bg-gradient-to-r from-[#FF8B4E] to-[#FF6B35] text-white h-12 rounded-xl font-bold">
-                      保存
-                    </Button>
-                  </form>
-                </Form>
-              </DialogContent>
-            </Dialog>
+        {/* 统计卡片 */}
+        <div className="grid grid-cols-3 gap-3">
+          <div className="bg-[#9CCF4E]/20 rounded-2xl p-4 text-center backdrop-blur-sm">
+            <TrendingUp className="h-6 w-6 mx-auto mb-2 text-[#9CCF4E]" />
+            <p className="text-xs text-gray-400 mb-1">收入</p>
+            <p className="text-lg font-bold text-[#9CCF4E]">{formatAmount(totalIncome)}</p>
           </div>
-
-          {/* 汇总卡片 */}
-          <div className="grid grid-cols-3 gap-3">
-            <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-4 text-center">
-              <p className="text-white/80 text-xs mb-1">本月收入</p>
-              <p className="text-white font-bold text-lg" style={{
-              fontFamily: 'Space Mono'
-            }}>
-                {formatAmount(summary.income)}
-              </p>
-              <ArrowUpRight className="h-4 w-4 text-white/60 mx-auto mt-1" />
-            </div>
-            <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-4 text-center">
-              <p className="text-white/80 text-xs mb-1">本月支出</p>
-              <p className="text-white font-bold text-lg" style={{
-              fontFamily: 'Space Mono'
-            }}>
-                {formatAmount(summary.expense)}
-              </p>
-              <ArrowDownRight className="h-4 w-4 text-white/60 mx-auto mt-1" />
-            </div>
-            <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-4 text-center">
-              <p className="text-white/80 text-xs mb-1">结余</p>
-              <p className={`font-bold text-lg ${summary.balance >= 0 ? 'text-[#9CCF4E]' : 'text-[#E85A42]'}`} style={{
-              fontFamily: 'Space Mono'
-            }}>
-                {formatAmount(summary.balance)}
-              </p>
-              <Wallet className="h-4 w-4 text-white/60 mx-auto mt-1" />
-            </div>
+          <div className="bg-[#E85A42]/20 rounded-2xl p-4 text-center backdrop-blur-sm">
+            <TrendingDown className="h-6 w-6 mx-auto mb-2 text-[#E85A42]" />
+            <p className="text-xs text-gray-400 mb-1">支出</p>
+            <p className="text-lg font-bold text-[#E85A42]">{formatAmount(totalExpense)}</p>
+          </div>
+          <div className={`${balance >= 0 ? 'bg-[#FF8B4E]/20' : 'bg-[#E94560]/20'} rounded-2xl p-4 text-center backdrop-blur-sm`}>
+            <Wallet className={`h-6 w-6 mx-auto mb-2 ${balance >= 0 ? 'text-[#FF8B4E]' : 'text-[#E94560]'}`} />
+            <p className="text-xs text-gray-400 mb-1">结余</p>
+            <p className={`text-lg font-bold ${balance >= 0 ? 'text-[#FF8B4E]' : 'text-[#E94560]'}`}>
+              {formatAmount(balance)}
+            </p>
           </div>
         </div>
       </div>
 
-      {/* 筛选栏 */}
-      <div className="px-4 py-4">
-        <div className="bg-white rounded-2xl shadow-lg p-4 mb-4">
-          <div className="flex items-center gap-2 mb-3">
-            <Search className="h-4 w-4 text-[#8B7355]" />
-            <Input placeholder="搜索描述或分类..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="flex-1 border-0 focus-visible:ring-0 p-0" />
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger className="w-[100px] h-8 text-xs">
-                <SelectValue placeholder="类型" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">全部</SelectItem>
-                <SelectItem value="income">收入</SelectItem>
-                <SelectItem value="expense">支出</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger className="w-[100px] h-8 text-xs">
-                <SelectValue placeholder="分类" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">全部分类</SelectItem>
-                {categories.map(c => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)}
-              </SelectContent>
-            </Select>
-
-            <Select value={dateFilter} onValueChange={setDateFilter}>
-              <SelectTrigger className="w-[100px] h-8 text-xs">
-                <SelectValue placeholder="时间" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">全部时间</SelectItem>
-                <SelectItem value="today">今天</SelectItem>
-                <SelectItem value="thisWeek">本周</SelectItem>
-                <SelectItem value="thisMonth">本月</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+      {/* 筛选区域 */}
+      <div className="p-4 space-y-3">
+        {/* 搜索框 */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Input placeholder="搜索记录..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="bg-[#1A1A2E] border-[#2A2A4E] text-white pl-10 rounded-xl h-11" />
         </div>
 
-        {/* 记录列表 */}
-        {loading ? <div className="flex items-center justify-center py-12">
-            <div className="w-8 h-8 border-4 border-[#FF8B4E] border-t-transparent rounded-full animate-spin" />
-          </div> : records.length > 0 ? <div className="space-y-3">
-            {records.filter(r => !searchQuery || r.description?.includes(searchQuery) || r.category?.includes(searchQuery)).map(record => <div key={record.id} className="bg-white rounded-2xl p-4 shadow-md hover:shadow-lg transition-shadow">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{
-                backgroundColor: `${getCategoryColor(record.category, record.type)}20`
-              }}>
-                        {getCategoryIcon(record.category, record.type)}
-                      </div>
-                      <div>
-                        <p className="font-semibold text-[#FF6B35]" style={{
-                  fontFamily: 'Quicksand'
-                }}>
-                          {record.category}
-                        </p>
-                        <p className="text-xs text-[#8B7355]" style={{
-                  fontFamily: 'Nunito'
-                }}>
-                          {record.description || '无描述'}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className={`font-bold text-lg ${record.type === 'income' ? 'text-[#9CCF4E]' : 'text-[#E85A42]'}`} style={{
-                fontFamily: 'Space Mono'
-              }}>
-                        {record.type === 'income' ? '+' : '-'}{formatAmount(record.amount)}
-                      </p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-xs text-[#8B7355]">{formatDate(record.recordDate)}</span>
-                        {getPaymentMethodIcon(record.paymentMethod)}
-                      </div>
-                    </div>
-                  </div>
-                  {record.nickname && <div className="mt-2 pt-2 border-t border-gray-100">
-                      <p className="text-xs text-[#8B7355]">
-                        记录人: {record.nickname}
-                      </p>
-                    </div>}
-                </div>)}
-          </div> : <div className="text-center py-12">
-            <Wallet className="h-16 w-16 mx-auto mb-4 text-[#FF8B4E] opacity-30" />
-            <p className="text-[#8B7355] mb-2" style={{
-          fontFamily: 'Quicksand'
+        {/* 筛选器 */}
+        <div className="flex gap-2">
+          <Select value={typeFilter} onValueChange={setTypeFilter}>
+            <SelectTrigger className="bg-[#1A1A2E] border-[#2A2A4E] text-white rounded-xl h-10 flex-1">
+              <SelectValue placeholder="类型" />
+            </SelectTrigger>
+            <SelectContent className="bg-[#1A1A2E] border-[#2A2A4E]">
+              <SelectItem value="all" className="text-white">全部类型</SelectItem>
+              <SelectItem value="income" className="text-[#9CCF4E]">收入</SelectItem>
+              <SelectItem value="expense" className="text-[#E85A42]">支出</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+            <SelectTrigger className="bg-[#1A1A2E] border-[#2A2A4E] text-white rounded-xl h-10 flex-1">
+              <SelectValue placeholder="类别" />
+            </SelectTrigger>
+            <SelectContent className="bg-[#1A1A2E] border-[#2A2A4E]">
+              <SelectItem value="all" className="text-white">全部分类</SelectItem>
+              {[...categories.income, ...categories.expense].map(cat => <SelectItem key={cat} value={cat} className="text-white">{cat}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* 记录列表 */}
+      <div className="px-4 space-y-3">
+        {filteredRecords.length > 0 ? filteredRecords.map(record => <div key={record.id} className="bg-[#1A1A2E] rounded-2xl p-4 flex items-center gap-4 hover:bg-[#16213E] transition-colors cursor-pointer" onClick={() => openEditDialog(record)}>
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center ${record.type === 'income' ? 'bg-[#9CCF4E]/20' : 'bg-[#E85A42]/20'}`}>
+                {record.type === 'income' ? <ArrowUpRight className="h-6 w-6 text-[#9CCF4E]" /> : <ArrowDownRight className="h-6 w-6 text-[#E85A42]" />}
+              </div>
+              
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-semibold text-white">{record.category}</span>
+                  <span className={`font-bold ${record.type === 'income' ? 'text-[#9CCF4E]' : 'text-[#E85A42]'}`}>
+                    {record.type === 'income' ? '+' : '-'}{formatAmount(record.amount)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-400">{record.notes}</span>
+                  <span className="text-gray-500">{record.date}</span>
+                </div>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-xs bg-[#2A2A4E] text-gray-300 px-2 py-0.5 rounded-full">
+                    {record.member}
+                  </span>
+                </div>
+              </div>
+
+              <Button variant="ghost" size="icon" className="text-gray-500 hover:text-[#E94560]" onClick={e => {
+          e.stopPropagation();
+          handleDelete(record.id);
         }}>
-              暂无收支记录
-            </p>
-            <p className="text-sm text-[#8B7355] opacity-60" style={{
-          fontFamily: 'Nunito'
-        }}>
-              点击右上角"记一笔"开始记录
-            </p>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>) : <div className="text-center py-12">
+            <Wallet className="h-16 w-16 mx-auto mb-4 text-gray-600" />
+            <p className="text-gray-400">暂无记录</p>
+            <p className="text-sm text-gray-500 mt-1">点击上方添加按钮创建记录</p>
           </div>}
+      </div>
+
+      {/* 添加/编辑对话框 */}
+      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <DialogContent className="bg-[#1A1A2E] border-[#2A2A4E] text-white rounded-2xl max-w-md">
+          <DialogHeader>
+            <DialogTitle style={{
+            fontFamily: 'Playfair Display, serif'
+          }}>
+              {editingRecord ? '编辑记录' : '添加记录'}
+            </DialogTitle>
+            <DialogDescription className="text-gray-400">
+              填写收支记录的详细信息
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            {/* 类型选择 */}
+            <div className="flex gap-2">
+              <Button className={`flex-1 h-12 rounded-xl ${formData.type === 'income' ? 'bg-[#9CCF4E] text-white' : 'bg-[#2A2A4E] text-gray-400'}`} onClick={() => setFormData({
+              ...formData,
+              type: 'income',
+              category: ''
+            })}>
+                <TrendingUp className="h-5 w-5 mr-2" />
+                收入
+              </Button>
+              <Button className={`flex-1 h-12 rounded-xl ${formData.type === 'expense' ? 'bg-[#E85A42] text-white' : 'bg-[#2A2A4E] text-gray-400'}`} onClick={() => setFormData({
+              ...formData,
+              type: 'expense',
+              category: ''
+            })}>
+                <TrendingDown className="h-5 w-5 mr-2" />
+                支出
+              </Button>
+            </div>
+
+            {/* 金额 */}
+            <div className="relative">
+              <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <Input type="number" placeholder="金额" value={formData.amount} onChange={e => setFormData({
+              ...formData,
+              amount: e.target.value
+            })} className="bg-[#0F0F1A] border-[#2A2A4E] text-white pl-10 rounded-xl h-12 text-lg" />
+            </div>
+
+            {/* 类别 */}
+            <Select value={formData.category} onValueChange={value => setFormData({
+            ...formData,
+            category: value
+          })}>
+              <SelectTrigger className="bg-[#0F0F1A] border-[#2A2A4E] text-white rounded-xl h-12">
+                <SelectValue placeholder="选择类别" />
+              </SelectTrigger>
+              <SelectContent className="bg-[#1A1A2E] border-[#2A2A4E]">
+                {(formData.type === 'income' ? categories.income : categories.expense).map(cat => <SelectItem key={cat} value={cat} className="text-white">{cat}</SelectItem>)}
+              </SelectContent>
+            </Select>
+
+            {/* 成员 */}
+            <Select value={formData.member} onValueChange={value => setFormData({
+            ...formData,
+            member: value
+          })}>
+              <SelectTrigger className="bg-[#0F0F1A] border-[#2A2A4E] text-white rounded-xl h-12">
+                <SelectValue placeholder="选择成员" />
+              </SelectTrigger>
+              <SelectContent className="bg-[#1A1A2E] border-[#2A2A4E]">
+                {members.map(member => <SelectItem key={member} value={member} className="text-white">{member}</SelectItem>)}
+              </SelectContent>
+            </Select>
+
+            {/* 日期 */}
+            <div className="relative">
+              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <Input type="date" value={formData.date} onChange={e => setFormData({
+              ...formData,
+              date: e.target.value
+            })} className="bg-[#0F0F1A] border-[#2A2A4E] text-white pl-10 rounded-xl h-12" />
+            </div>
+
+            {/* 备注 */}
+            <Textarea placeholder="备注（可选）" value={formData.notes} onChange={e => setFormData({
+            ...formData,
+            notes: e.target.value
+          })} className="bg-[#0F0F1A] border-[#2A2A4E] text-white rounded-xl resize-none" rows={2} />
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)} className="border-[#2A2A4E] text-white hover:bg-[#2A2A4E] rounded-xl">
+              取消
+            </Button>
+            <Button onClick={handleSubmit} disabled={loading} className="bg-[#FF8B4E] hover:bg-[#FF6B35] text-white rounded-xl">
+              {loading ? '保存中...' : '保存'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 底部导航 */}
+      <div className="fixed bottom-0 left-0 right-0 bg-[#1A1A2E] border-t border-[#2A2A4E] p-2 flex justify-around items-center pb-6">
+        <Button variant="ghost" className="flex flex-col items-center gap-1 text-gray-400 h-14" onClick={() => navigateTo({
+        pageId: 'family-finance-records',
+        params: {}
+      })}>
+          <Wallet className="h-6 w-6 text-[#FF8B4E]" />
+          <span className="text-xs">记录</span>
+        </Button>
+        <Button variant="ghost" className="flex flex-col items-center gap-1 text-gray-400 h-14" onClick={() => navigateTo({
+        pageId: 'family-finance-budget',
+        params: {}
+      })}>
+          <PiggyBank className="h-6 w-6" />
+          <span className="text-xs">预算</span>
+        </Button>
+        <Button variant="ghost" className="flex flex-col items-center gap-1 text-gray-400 h-14" onClick={() => navigateTo({
+        pageId: 'family-finance-report',
+        params: {}
+      })}>
+          <TrendingUp className="h-6 w-6" />
+          <span className="text-xs">报表</span>
+        </Button>
       </div>
     </div>;
 }
