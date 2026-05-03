@@ -1,0 +1,60 @@
+{
+  "name": "finance_categories",
+  "title": "财务分类",
+  "description": "收支分类管理",
+  "fields": [
+    {
+      "name": "familyGroupId",
+      "type": "string",
+      "title": "家庭组ID",
+      "required": true
+    },
+    {
+      "name": "type",
+      "type": "string",
+      "title": "类型",
+      "required": true,
+      "enum": ["income", "expense"]
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "title": "分类名称",
+      "required": true
+    },
+    {
+      "name": "icon",
+      "type": "string",
+      "title": "图标"
+    },
+    {
+      "name": "color",
+      "type": "string",
+      "title": "颜色"
+    },
+    {
+      "name": "sortOrder",
+      "type": "number",
+      "title": "排序",
+      "default": 0
+    },
+    {
+      "name": "isDefault",
+      "type": "boolean",
+      "title": "是否默认分类",
+      "default": false
+    },
+    {
+      "name": "isActive",
+      "type": "boolean",
+      "title": "是否启用",
+      "default": true
+    },
+    {
+      "name": "createdAt",
+      "type": "datetime",
+      "title": "创建时间",
+      "default": "now()"
+    }
+  ]
+}

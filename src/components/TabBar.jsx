@@ -1,5 +1,5 @@
 // @ts-ignore;
-import React from 'react';
+import React, { useState } from 'react';
 // @ts-ignore;
 import { Home, ChefHat, Store, User, Sparkles } from 'lucide-react';
 
@@ -9,6 +9,8 @@ export function TabBar({
   userRole,
   navigateTo
 }) {
+  const [pressedTab, setPressedTab] = useState(null);
+
   // 根据用户角色显示不同的导航项
   const getNavItems = () => {
     if (userRole === 'family') {
@@ -59,29 +61,51 @@ export function TabBar({
     return [];
   };
   const navItems = getNavItems();
-  return <div className="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-[#FCEEB8] shadow-lg z-50">
+  const handleTabClick = item => {
+    setPressedTab(item.id);
+    setTimeout(() => setPressedTab(null), 150);
+    if (item.id === 'ai') {
+      navigateTo({
+        pageId: 'ai-copywriting',
+        params: {}
+      });
+    } else {
+      onTabChange && onTabChange(item.id);
+    }
+  };
+  return <div className="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-[#FCEEB8] shadow-lg z-50 safe-area-bottom">
       <div className="max-w-6xl mx-auto px-4">
         <div className="flex justify-around items-center h-16">
           {navItems.map(item => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
-          return <button key={item.id} onClick={() => {
-            if (item.id === 'ai') {
-              navigateTo({
-                pageId: 'ai-copywriting',
-                params: {}
-              });
-            } else {
-              onTabChange && onTabChange(item.id);
-            }
-          }} className={`flex flex-col items-center justify-center gap-1 py-2 px-4 rounded-xl transition-all ${isActive ? 'text-[#FF8B4E] bg-[#FCEEB8]' : 'text-[#8B7355] hover:text-[#FF6B35]'}`}>
-                <Icon className="h-6 w-6" />
-                <span className={`text-xs font-semibold ${isActive ? 'text-[#FF6B35]' : ''}`} style={{
+          const isPressed = pressedTab === item.id;
+          return <button key={item.id} onClick={() => handleTabClick(item)} className={`
+                flex flex-col items-center justify-center gap-1 py-2 px-4 rounded-xl 
+                transition-all duration-200 ease-out
+                active:scale-90
+                ${isActive ? 'text-[#FF8B4E] bg-[#FCEEB8] shadow-inner' : 'text-[#8B7355] hover:text-[#FF6B35] hover:bg-[#FFF9E6]'}
+                ${isPressed ? 'scale-90' : ''}
+              `}>
+              <div className={`
+                relative transition-transform duration-200
+                ${isActive ? 'transform -translate-y-0.5' : ''}
+              `}>
+                <Icon className={`
+                  h-6 w-6 transition-all duration-200
+                  ${isActive ? 'drop-shadow-md' : ''}
+                `} />
+                {isActive && <span className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-[#FF8B4E] rounded-full" />}
+              </div>
+              <span className={`
+                text-xs font-semibold transition-all duration-200
+                ${isActive ? 'text-[#FF6B35]' : ''}
+              `} style={{
               fontFamily: 'Quicksand'
             }}>
-                  {item.label}
-                </span>
-              </button>;
+                {item.label}
+              </span>
+            </button>;
         })}
         </div>
       </div>

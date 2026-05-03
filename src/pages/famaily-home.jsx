@@ -3,10 +3,14 @@ import React, { useState, useEffect } from 'react';
 // @ts-ignore;
 import { useToast, Button } from '@/components/ui';
 // @ts-ignore;
-import { Heart, Clock, Users, ChefHat, ShoppingBag, MessageSquare, TrendingUp, Calendar, Star, ArrowRight, Loader2, RefreshCw } from 'lucide-react';
+import { Heart, Clock, Users, ChefHat, ShoppingBag, MessageSquare, TrendingUp, Calendar, Star, ArrowRight, Loader2, RefreshCw, Wallet, CheckCircle, Inbox } from 'lucide-react';
 
 // @ts-ignore;
 import TabBar from '@/components/TabBar';
+// @ts-ignore;
+import { EmptyState, LoadingState } from '@/components/EmptyState';
+// @ts-ignore;
+import { ActionButton } from '@/components/ActionButton';
 export default function FamilyHome(props) {
   const {
     toast
@@ -448,13 +452,13 @@ export default function FamilyHome(props) {
               处理申请 ({pendingTransitions.length})
             </Button>}
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
             <Button onClick={() => navigateTo({
             pageId: 'family-member',
             params: {}
           })} className="bg-gradient-to-br from-[#FF8B4E] to-[#FF6B35] text-white h-20 flex flex-col items-center justify-center gap-2 rounded-2xl shadow-lg hover:shadow-xl transition-shadow">
               <ChefHat className="h-8 w-8" />
-              <span className="font-bold" style={{
+              <span className="font-bold text-xs" style={{
               fontFamily: 'Quicksand'
             }}>开始点菜</span>
             </Button>
@@ -463,21 +467,54 @@ export default function FamilyHome(props) {
             params: {}
           })} className="bg-gradient-to-br from-[#9CCF4E] to-[#FF6B35] text-white h-20 flex flex-col items-center justify-center gap-2 rounded-2xl shadow-lg hover:shadow-xl transition-shadow">
               <MessageSquare className="h-8 w-8" />
-              <span className="font-bold" style={{
+              <span className="font-bold text-xs" style={{
               fontFamily: 'Quicksand'
             }}>查看订单</span>
             </Button>
             
-            {/* 权限申请按钮（非管理员可见） */}
-            {userPermissions && userPermissions.role !== 'admin' && userPermissions.role !== 'owner' && <Button onClick={() => navigateTo({
-            pageId: 'family-member',
+            {/* 家庭活动 */}
+            <Button onClick={() => navigateTo({
+            pageId: 'family-activities',
             params: {}
           })} className="bg-gradient-to-br from-[#E85A42] to-[#FF6B35] text-white h-20 flex flex-col items-center justify-center gap-2 rounded-2xl shadow-lg hover:shadow-xl transition-shadow">
-                <Users className="h-8 w-8" />
-                <span className="font-bold" style={{
+              <Calendar className="h-8 w-8" />
+              <span className="font-bold text-xs" style={{
               fontFamily: 'Quicksand'
-            }}>申请权限</span>
-              </Button>}
+            }}>家庭活动</span>
+            </Button>
+            
+            {/* 财务管理 */}
+            <Button onClick={() => navigateTo({
+            pageId: 'family-finance-records',
+            params: {}
+          })} className="bg-gradient-to-br from-[#27AE60] to-[#9CCF4E] text-white h-20 flex flex-col items-center justify-center gap-2 rounded-2xl shadow-lg hover:shadow-xl transition-shadow">
+              <Wallet className="h-8 w-8" />
+              <span className="font-bold text-xs" style={{
+              fontFamily: 'Quicksand'
+            }}>财务管理</span>
+            </Button>
+            
+            {/* 任务系统 */}
+            <Button onClick={() => navigateTo({
+            pageId: 'family-tasks',
+            params: {}
+          })} className="bg-gradient-to-br from-[#9B59B6] to-[#E74C3C] text-white h-20 flex flex-col items-center justify-center gap-2 rounded-2xl shadow-lg hover:shadow-xl transition-shadow">
+              <CheckCircle className="h-8 w-8" />
+              <span className="font-bold text-xs" style={{
+              fontFamily: 'Quicksand'
+            }}>任务系统</span>
+            </Button>
+            
+            {/* 日程共享 */}
+            <Button onClick={() => navigateTo({
+            pageId: 'family-calendar',
+            params: {}
+          })} className="bg-gradient-to-br from-[#3498DB] to-[#2980B9] text-white h-20 flex flex-col items-center justify-center gap-2 rounded-2xl shadow-lg hover:shadow-xl transition-shadow">
+              <Calendar className="h-8 w-8" />
+              <span className="font-bold text-xs" style={{
+              fontFamily: 'Quicksand'
+            }}>日程共享</span>
+            </Button>
           </div>
         </div>
 
@@ -546,12 +583,10 @@ export default function FamilyHome(props) {
           </div>
 
           <div className="space-y-4">
-            {recentOrders.length === 0 && <div className="text-center py-8">
-                <ShoppingBag className="h-12 w-12 text-[#FF8B4E] mx-auto mb-4" />
-                <p className="text-[#8B7355] text-lg" style={{
-              fontFamily: 'Nunito'
-            }}>暂无订单数据</p>
-              </div>}
+            {recentOrders.length === 0 && <EmptyState icon="inbox" title="暂无订单" description="还没有订单，快去点菜吧" actionText="去点菜" onAction={() => navigateTo({
+            pageId: 'family-member',
+            params: {}
+          })} />}
             {recentOrders.map(order => <div key={order.id} className="bg-[#FCEEB8] rounded-2xl p-4 border-2 border-[#FF8B4E] border-dashed">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">

@@ -3,10 +3,14 @@ import React, { useState, useEffect } from 'react';
 // @ts-ignore;
 import { useToast, Button } from '@/components/ui';
 // @ts-ignore;
-import { ChefHat, ShoppingCart, BookOpen, Play, Clock, Users, CheckCircle, ListChecks, Video, Image as ImageIcon, Info, Loader2, Flame } from 'lucide-react';
+import { ChefHat, ShoppingCart, BookOpen, Play, Clock, Users, CheckCircle, ListChecks, Video, Image as ImageIcon, Info, Loader2, Flame, Inbox } from 'lucide-react';
 
 // @ts-ignore;
 import TabBar from '@/components/TabBar';
+// @ts-ignore;
+import { EmptyState, LoadingState } from '@/components/EmptyState';
+// @ts-ignore;
+import { ActionButton } from '@/components/ActionButton';
 export default function FamilyChef(props) {
   const {
     toast
@@ -79,12 +83,6 @@ export default function FamilyChef(props) {
           total: order.total || 0
         }));
         setOrders(fetchedOrders);
-      } else {
-        toast({
-          variant: 'destructive',
-          title: '获取订单失败',
-          description: '请稍后重试'
-        });
       }
     } catch (error) {
       toast({

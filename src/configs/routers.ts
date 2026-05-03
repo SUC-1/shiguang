@@ -11,6 +11,10 @@ import FAMILY_ACTIVITIES from '../pages/family-activities.jsx';
 import FAMILY_ACTIVITY-DETAIL from '../pages/family-activity-detail.jsx';
 import FAMILY_ACTIVITY-FORM from '../pages/family-activity-form.jsx';
 import FAMILY_ACTIVITY-PHOTOS from '../pages/family-activity-photos.jsx';
+import FAMILY_FINANCE-RECORDS from '../pages/family-finance-records.jsx';
+import FAMILY_CALENDAR from '../pages/family-calendar.jsx';
+import FAMILY_EVENT-FORM from '../pages/family-event-form.jsx';
+import FAMILY_EVENT-DETAIL from '../pages/family-event-detail.jsx';
 export const routers = [{
   id: "login",
   component: LOGIN
@@ -50,4 +54,16 @@ export const routers = [{
 }, {
   id: "family-activity-photos",
   component: FAMILY_ACTIVITY-PHOTOS
+}, {
+  id: "family-finance-records",
+  component: FAMILY_FINANCE-RECORDS
+}, {
+  id: "family-calendar",
+  component: FAMILY_CALENDAR
+}, {
+  id: "family-event-form",
+  component: FAMILY_EVENT-FORM
+}, {
+  id: "family-event-detail",
+  component: FAMILY_EVENT-DETAIL
 }]

@@ -1,10 +1,16 @@
 // @ts-ignore;
 import React, { useState, useEffect } from 'react';
 // @ts-ignore;
-import { Heart, ChefHat, ArrowRight, Users, Loader2 } from 'lucide-react';
+import { Heart, ChefHat, ArrowRight, Users, Loader2, Inbox } from 'lucide-react';
 // @ts-ignore;
 import { Button, useToast } from '@/components/ui';
 
+// @ts-ignore;
+import { LoadingState, EmptyState, ErrorState } from '@/components/EmptyState';
+// @ts-ignore;
+import { ActionButton } from '@/components/ActionButton';
+// @ts-ignore;
+import { FormField, FormSection } from '@/components/FormField';
 export default function FamilyRole(props) {
   const {
     navigateTo
@@ -350,12 +356,7 @@ export default function FamilyRole(props) {
   // 加载状态
   if (loading) {
     return <div className="min-h-screen bg-gradient-to-br from-[#FCEEB8] via-[#FF8B4E] to-[#FF6B35] flex items-center justify-center p-6">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-12 w-12 text-white animate-spin" />
-          <p className="text-white text-lg font-semibold" style={{
-          fontFamily: 'Quicksand'
-        }}>加载中...</p>
-        </div>
+        <LoadingState message="正在加载角色信息..." />
       </div>;
   }
   return <div className="min-h-screen bg-gradient-to-br from-[#FCEEB8] via-[#FF8B4E] to-[#FF6B35] flex items-center justify-center p-6">
@@ -457,49 +458,36 @@ export default function FamilyRole(props) {
         </div>
 
         {/* 注册角色提示 */}
-        {memberCount === 0 && chefCount === 0 && <div className="mt-8 bg-white rounded-3xl shadow-xl p-6 text-center">
-            <Users className="h-10 w-10 text-[#FF8B4E] mx-auto mb-3" />
-            <p className="text-[#8B7355] text-base mb-4" style={{
-          fontFamily: 'Nunito'
-        }}>您尚未注册任何角色，请选择下方角色进行注册</p>
-            <div className="flex gap-4 justify-center">
-              <Button onClick={() => handleRegisterRole('family_member')} disabled={registering} className="bg-[#FF8B4E] text-white h-12 px-6 font-bold rounded-xl hover:bg-[#FF6B35] shadow-lg" style={{
-            fontFamily: 'Quicksand'
-          }}>
-                {registering ? <Loader2 className="h-5 w-5 animate-spin" /> : '注册为家庭成员'}
-              </Button>
-              <Button onClick={() => handleRegisterRole('family_chef')} disabled={registering} className="bg-[#9CCF4E] text-white h-12 px-6 font-bold rounded-xl hover:bg-[#FF6B35] shadow-lg" style={{
-            fontFamily: 'Quicksand'
-          }}>
-                {registering ? <Loader2 className="h-5 w-5 animate-spin" /> : '注册为家庭大厨'}
-              </Button>
+        {memberCount === 0 && chefCount === 0 && <div className="mt-8">
+            <EmptyState icon="inbox" title="欢迎使用温馨家庭" description="您尚未注册任何角色，请选择下方角色进行注册，开始您的美食之旅" className="bg-white rounded-3xl shadow-xl" />
+            <div className="flex gap-4 justify-center mt-6">
+              <ActionButton onClick={() => handleRegisterRole('family_member')} loading={registering} disabled={registering} variant="primary" icon={Heart}>
+                注册为家庭成员
+              </ActionButton>
+              <ActionButton onClick={() => handleRegisterRole('family_chef')} loading={registering} disabled={registering} variant="secondary" icon={ChefHat}>
+                注册为家庭大厨
+              </ActionButton>
             </div>
           </div>}
 
         {/* 角色管理按钮（管理员可见） */}
         {userPermissions && (userPermissions.role === 'admin' || userPermissions.role === 'owner') && <div className="mt-6 text-center">
-            <Button onClick={() => setShowRoleManagement(true)} className="bg-[#9CCF4E] text-white h-12 px-6 font-bold rounded-xl hover:bg-[#FF6B35] shadow-lg" style={{
-          fontFamily: 'Quicksand'
-        }}>
+            <ActionButton onClick={() => setShowRoleManagement(true)} variant="secondary">
               角色管理
-            </Button>
+            </ActionButton>
           </div>}
 
         {/* 角色变更申请按钮 */}
         {userPermissions && userPermissions.permissions?.canInviteMembers && <div className="mt-4 text-center">
-            <Button onClick={() => setShowRoleTransition(true)} className="bg-[#FF8B4E] text-white h-12 px-6 font-bold rounded-xl hover:bg-[#FF6B35] shadow-lg" style={{
-          fontFamily: 'Quicksand'
-        }}>
+            <ActionButton onClick={() => setShowRoleTransition(true)} variant="outline">
               申请角色变更
-            </Button>
+            </ActionButton>
           </div>}
 
         <div className="mt-8 text-center">
-          <Button onClick={() => window.history.back()} className="bg-white text-[#FF6B35] border-2 border-[#FF6B35] h-12 px-8 font-bold rounded-xl hover:bg-[#FF6B35] hover:text-white transition-colors" style={{
-          fontFamily: 'Quicksand'
-        }}>
+          <ActionButton onClick={() => window.history.back()} variant="outline">
             返回
-          </Button>
+          </ActionButton>
         </div>
 
         {/* 角色管理弹窗 */}
@@ -527,15 +515,13 @@ export default function FamilyRole(props) {
                     }}>原因: {transition.reason}</p>
                           </div>
                           <div className="flex gap-2">
-                            <Button onClick={() => handleApproveTransition(transition._id, true)} className="bg-[#9CCF4E] text-white h-8 px-3 rounded-lg text-sm">同意</Button>
-                            <Button onClick={() => handleApproveTransition(transition._id, false)} className="bg-[#E85A42] text-white h-8 px-3 rounded-lg text-sm">拒绝</Button>
+                            <ActionButton onClick={() => handleApproveTransition(transition._id, true)} variant="secondary" size="small">同意</ActionButton>
+                            <ActionButton onClick={() => handleApproveTransition(transition._id, false)} variant="danger" size="small">拒绝</ActionButton>
                           </div>
                         </div>
                       </div>)}
                   </div>
-                </div> : <p className="text-center text-[#8B7355] py-4" style={{
-            fontFamily: 'Nunito'
-          }}>暂无待审批申请</p>}
+                </div> : <EmptyState icon="inbox" title="暂无待审批申请" description="当前没有需要审批的角色变更申请" />}
             </div>
           </div>}
 

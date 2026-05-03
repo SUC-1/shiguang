@@ -1,0 +1,72 @@
+{
+  "name": "family_budgets",
+  "title": "家庭预算",
+  "description": "家庭月度预算设置",
+  "fields": [
+    {
+      "name": "familyGroupId",
+      "type": "string",
+      "title": "家庭组ID",
+      "required": true
+    },
+    {
+      "name": "year",
+      "type": "number",
+      "title": "年份",
+      "required": true
+    },
+    {
+      "name": "month",
+      "type": "number",
+      "title": "月份",
+      "required": true
+    },
+    {
+      "name": "totalBudget",
+      "type": "number",
+      "title": "总预算",
+      "required": true
+    },
+    {
+      "name": "categoryBudgets",
+      "type": "object",
+      "title": "分类预算",
+      "description": "各分类的预算设置"
+    },
+    {
+      "name": "alertThreshold",
+      "type": "number",
+      "title": "预警阈值",
+      "description": "预算使用百分比达到此值时预警",
+      "default": 80
+    },
+    {
+      "name": "isActive",
+      "type": "boolean",
+      "title": "是否启用",
+      "default": true
+    },
+    {
+      "name": "notes",
+      "type": "string",
+      "title": "备注"
+    },
+    {
+      "name": "createdBy",
+      "type": "string",
+      "title": "创建者"
+    },
+    {
+      "name": "createdAt",
+      "type": "datetime",
+      "title": "创建时间",
+      "default": "now()"
+    },
+    {
+      "name": "updatedAt",
+      "type": "datetime",
+      "title": "更新时间",
+      "default": "now()"
+    }
+  ]
+}

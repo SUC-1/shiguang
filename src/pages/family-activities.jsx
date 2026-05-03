@@ -1,11 +1,15 @@
 // @ts-ignore;
 import React, { useState, useEffect } from 'react';
 // @ts-ignore;
-import { Calendar, MapPin, Users, Plus, Search, Filter, ChevronRight, Clock, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { Calendar, MapPin, Users, Plus, Search, Filter, ChevronRight, Clock, CheckCircle, XCircle, Loader2, Inbox } from 'lucide-react';
 // @ts-ignore;
 import { Button, Input, useToast } from '@/components/ui';
 
 import { TabBar } from '@/components/TabBar';
+// @ts-ignore;
+import { EmptyState, LoadingState } from '@/components/EmptyState';
+// @ts-ignore;
+import { ActionButton } from '@/components/ActionButton';
 export default function FamilyActivities(props) {
   const {
     toast
@@ -142,6 +146,21 @@ export default function FamilyActivities(props) {
         description: error.message || '请稍后重试'
       });
     }
+  };
+
+  // 刷新数据
+  const handleRefresh = async () => {
+    setLoading(true);
+    const groupId = await fetchFamilyGroup();
+    if (groupId) {
+      await fetchActivities(groupId);
+    }
+    setLoading(false);
+    toast({
+      variant: 'default',
+      title: '刷新成功',
+      description: '活动列表已更新'
+    });
   };
 
   // 页面初始化
